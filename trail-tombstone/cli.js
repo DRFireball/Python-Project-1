@@ -14,6 +14,8 @@ const TT = require('./src/scene');
 const FLAGS = {
   subject: 'traveler | horse | wagon',
   sky: 'day | dusk | night',
+  look: 'color | green (black and neon green only)',
+  green: 'shorthand for --look green',
   header: 'small line at the top of the stone (default "HERE LIES")',
   name: 'name carved in large letters',
   epitaph: 'epitaph text (use \\n for a line break)',
@@ -57,6 +59,10 @@ function parse(argv) {
       opts.typewriter = true;
       continue;
     }
+    if (key === 'green') {
+      opts.look = 'green';
+      continue;
+    }
     if (value === undefined) {
       value = argv[++i];
       if (value === undefined) throw new Error(`--${key} needs a value`);
@@ -66,6 +72,7 @@ function parse(argv) {
   if (opts.epitaph) opts.epitaph = opts.epitaph.replace(/\\n/g, '\n');
   if (opts.subject && !TT.SUBJECTS[opts.subject]) throw new Error(`--subject must be one of: ${Object.keys(TT.SUBJECTS).join(', ')}`);
   if (opts.sky && !TT.SKIES[opts.sky]) throw new Error(`--sky must be one of: ${Object.keys(TT.SKIES).join(', ')}`);
+  if (opts.look && !TT.LOOKS[opts.look]) throw new Error(`--look must be one of: ${Object.keys(TT.LOOKS).join(', ')}`);
   return opts;
 }
 

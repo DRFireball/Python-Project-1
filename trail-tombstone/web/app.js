@@ -39,6 +39,7 @@
   const state = {
     subject: 'traveler',
     sky: 'dusk',
+    look: 'color',
     header: 'HERE LIES',
     name: TT.PRESETS.traveler.name,
     epitaph: TT.PRESETS.traveler.epitaph,
@@ -80,6 +81,7 @@
     };
     radio('subject', state.subject);
     radio('sky', state.sky);
+    radio('look', state.look);
     els.header.value = state.header;
     els.name.value = state.name;
     els.epitaph.value = state.epitaph;
@@ -277,8 +279,8 @@
       els.crittersLabel.textContent = CRITTER_LABEL[state.subject];
       frameIndex = 0;
       update();
-    } else if (t.name === 'sky') {
-      state.sky = t.value;
+    } else if (t.name === 'sky' || t.name === 'look') {
+      state[t.name] = t.value;
       update({ thumbs: true });
     } else if (t.type === 'checkbox') {
       state[t.id] = t.checked;

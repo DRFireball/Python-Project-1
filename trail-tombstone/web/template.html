@@ -205,6 +205,7 @@ legend, .label {
 .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--key-edge); border-radius: 9px; overflow: hidden; }
 .seg label { text-align: center; padding: 9px 6px; cursor: pointer; background: var(--key); font: 500 13px/1.2 var(--font-body); }
 .seg label + label { border-left: 1px solid var(--key-edge); }
+.seg.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
 
@@ -302,6 +303,19 @@ textarea { resize: vertical; min-height: 74px; }
           <label><input type="radio" name="sky" value="dusk" id="sky-dusk" checked>Sundown</label>
           <label><input type="radio" name="sky" value="night" id="sky-night">Moonlight</label>
         </div>
+        <div class="field-head">
+          <span class="hint">New mountains, grass and flowers</span>
+          <button type="button" class="key small" id="sceneryBtn">Reshuffle scenery</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Colors</legend>
+        <div class="seg two">
+          <label><input type="radio" name="look" value="color" id="look-color" checked>Full color</label>
+          <label><input type="radio" name="look" value="green" id="look-green">Green screen</label>
+        </div>
+        <p class="hint" style="margin:0">Green screen draws everything in just black and neon green.</p>
       </fieldset>
 
       <fieldset>
@@ -342,9 +356,9 @@ textarea { resize: vertical; min-height: 74px; }
           <label class="chip"><input type="checkbox" id="flowers" checked>Flowers</label>
           <label class="chip"><input type="checkbox" id="buzzards" checked>Buzzards</label>
           <label class="chip"><input type="checkbox" id="critters" checked><span id="crittersLabel">Ghost</span></label>
-          <label class="chip"><input type="checkbox" id="typewriter">Type it out</label>
+          <label class="chip"><input type="checkbox" id="typewriter">Typewriter text</label>
         </div>
-        <div><button type="button" class="key small" id="sceneryBtn">New scenery</button></div>
+        <p class="hint" style="margin:0">Typewriter text spells out the epitaph, then the caption, one letter at a time and holds before looping. The GIF gets longer (about 6 seconds instead of 2).</p>
       </fieldset>
 
       <p class="footnote">Everything is drawn in your browser. The same renderer runs from the command line: <code>node cli.js --help</code></p>

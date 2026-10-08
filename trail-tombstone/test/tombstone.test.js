@@ -65,6 +65,17 @@ for (const subject of Object.keys(TT.SUBJECTS)) {
   });
 }
 
+test('green-screen look uses only black and neon green, and decodes exactly', () => {
+  for (const subject of Object.keys(TT.SUBJECTS)) {
+    const r = TT.renderFrames({ subject, look: 'green' });
+    assert.deepEqual(r.palette, [[0, 0, 0], [57, 255, 20]]);
+    assert.ok(r.frames.every((f) => f.every((v) => v === 0 || v === 1)));
+    const gif = decodeGif(TT.renderGif({ subject, look: 'green', scale: 1 }).bytes);
+    assert.deepEqual(gif.palette.slice(0, 2), [[0, 0, 0], [57, 255, 20]]);
+    assert.deepEqual(gif.frames[0].data, r.frames[0]);
+  }
+});
+
 test('all printable ASCII has a 5x7 glyph', () => {
   const mask = { w: 6, h: 7, data: new Int16Array(42) };
   for (let c = 32; c < 127; c++) {

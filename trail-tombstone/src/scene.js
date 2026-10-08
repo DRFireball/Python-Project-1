@@ -25,6 +25,7 @@
     wagon: { label: 'Tipped-over wagon' },
   };
   const SKIES = { day: 'Midday', dusk: 'Sundown', night: 'Moonlight' };
+  const LOOKS = { color: 'Full color', green: 'Green screen (black + neon green only)' };
 
   // Starting text for each subject (used when no name/epitaph is given).
   const PRESETS = {
@@ -74,6 +75,7 @@
   const DEFAULTS = {
     subject: 'traveler',
     sky: 'dusk',
+    look: 'color', // or 'green': black and neon green only
     header: 'HERE LIES',
     caption: 'Press SPACE to pay respects',
     cross: true,
@@ -93,6 +95,7 @@
     for (const [k, v] of Object.entries(opts || {})) if (v !== undefined) o[k] = v;
     if (!SUBJECTS[o.subject]) o.subject = DEFAULTS.subject;
     if (!SKIES[o.sky]) o.sky = DEFAULTS.sky;
+    if (!LOOKS[o.look]) o.look = DEFAULTS.look;
     if (o.name === undefined) o.name = PRESETS[o.subject].name;
     if (o.epitaph === undefined) o.epitaph = PRESETS[o.subject].epitaph;
     o.seed = (Number(o.seed) || 0) >>> 0;
@@ -259,7 +262,8 @@
    */
   function renderFrames(options) {
     const o = withDefaults(options);
-    const palette = art.buildPalette(o.sky);
+    const mono = o.look === 'green' ? art.monoLevels(o.sky) : null;
+    const palette = mono ? art.GREEN_SCREEN : art.buildPalette(o.sky);
     const tufts = art.tuftList(o.seed);
     const stone = cached('stone:' + o.seed + ':' + o.flowers, () => art.buildStone(o.seed, o));
     const lay = layoutStone(o);
@@ -270,6 +274,8 @@
     if (o.subject === 'traveler') subject = cached('traveler', art.buildTraveler);
     else if (o.subject === 'horse') subject = cached('horse', art.buildHorse);
     else subject = cached('wagon', art.buildWagon);
+    // In the two-color look, a neon edge keeps the subject from melting into the dark grass.
+    const subjectLayer = mono ? cached('halo:' + o.subject, () => subject.layer.clone().outline(C.capFg)) : subject.layer;
     const place = subjectPlacement(o.subject);
     const sx = place.x;
     const sy = place.groundY - subject.ground;
@@ -312,17 +318,21 @@
       carve(L, lay, revealEpitaph);
 
       const [shx, shy, shrx, shry] = place.shadow;
-      art.drawShadow(L, sx + shx, sy + shy, shrx, shry);
+      if (!mono) art.drawShadow(L, sx + shx, sy + shy, shrx, shry); // reads as a blotch in two colors
       if (o.subject === 'wagon') {
-        art.drawLooseWheel(L, sx + 4, place.groundY + 5);
-        subject.layer.drawOnto(L, sx, sy);
-        art.drawCargo(L, sx - 4, place.groundY - 10, sx + 90, place.groundY - 11);
+        subjectLayer.drawOnto(L, sx, sy);
+        art.drawCargo(L, sx + 50, place.groundY - 4, sx + 90, place.groundY - 11);
         for (const w of art.WAGON.wheels) {
+          if (w.missing) {
+            art.drawHub(L, sx + w.x, sy + w.y);
+            continue;
+          }
           const angle = w.spin && o.critters ? (loopF / LOOP) * ((Math.PI * 2) / 10) * 2 : 0.15;
           art.drawWheel(L, sx + w.x, sy + w.y, w.r, angle, 10);
         }
+        art.drawLooseWheel(L, sx + 11, place.groundY + 2);
       } else {
-        subject.layer.drawOnto(L, sx, sy);
+        subjectLayer.drawOnto(L, sx, sy);
       }
       if (o.critters && o.subject === 'horse') art.drawFlies(L, loopF, LOOP, sx, sy);
       if (o.critters && o.subject === 'traveler') art.drawSpirit(L, loopF, LOOP, sx + subject.center[0], sy + subject.center[1]);
@@ -330,7 +340,16 @@
       if (cap) drawCaption(L, cap, f, revealCaption);
 
       const out = new Uint8Array(W * H);
-      for (let i = 0; i < out.length; i++) out[i] = L.data[i] < 0 ? C.k : L.data[i];
+      if (mono) {
+        // Each color becomes a black / neon-green dither pattern by brightness.
+        for (let y = 0, i = 0; y < H; y++)
+          for (let x = 0; x < W; x++, i++) {
+            const c = L.data[i] < 0 ? C.k : L.data[i];
+            out[i] = art.bayer(x, y) < mono[c] / 4 ? 1 : 0;
+          }
+      } else {
+        for (let i = 0; i < out.length; i++) out[i] = L.data[i] < 0 ? C.k : L.data[i];
+      }
       frames.push(out);
     }
 
@@ -357,5 +376,5 @@
     return { bytes, info: r.info, width: r.width * o.scale, height: r.height * o.scale };
   }
 
-  return { renderFrames, renderGif, layoutStone, withDefaults, DEFAULTS, PRESETS, EPITAPHS, SUBJECTS, SKIES, W, H };
+  return { renderFrames, renderGif, layoutStone, withDefaults, DEFAULTS, PRESETS, EPITAPHS, SUBJECTS, SKIES, LOOKS, W, H };
 });

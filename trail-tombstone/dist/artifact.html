@@ -205,6 +205,7 @@ legend, .label {
 .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--key-edge); border-radius: 9px; overflow: hidden; }
 .seg label { text-align: center; padding: 9px 6px; cursor: pointer; background: var(--key); font: 500 13px/1.2 var(--font-body); }
 .seg label + label { border-left: 1px solid var(--key-edge); }
+.seg.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
 
@@ -302,6 +303,19 @@ textarea { resize: vertical; min-height: 74px; }
           <label><input type="radio" name="sky" value="dusk" id="sky-dusk" checked>Sundown</label>
           <label><input type="radio" name="sky" value="night" id="sky-night">Moonlight</label>
         </div>
+        <div class="field-head">
+          <span class="hint">New mountains, grass and flowers</span>
+          <button type="button" class="key small" id="sceneryBtn">Reshuffle scenery</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Colors</legend>
+        <div class="seg two">
+          <label><input type="radio" name="look" value="color" id="look-color" checked>Full color</label>
+          <label><input type="radio" name="look" value="green" id="look-green">Green screen</label>
+        </div>
+        <p class="hint" style="margin:0">Green screen draws everything in just black and neon green.</p>
       </fieldset>
 
       <fieldset>
@@ -342,9 +356,9 @@ textarea { resize: vertical; min-height: 74px; }
           <label class="chip"><input type="checkbox" id="flowers" checked>Flowers</label>
           <label class="chip"><input type="checkbox" id="buzzards" checked>Buzzards</label>
           <label class="chip"><input type="checkbox" id="critters" checked><span id="crittersLabel">Ghost</span></label>
-          <label class="chip"><input type="checkbox" id="typewriter">Type it out</label>
+          <label class="chip"><input type="checkbox" id="typewriter">Typewriter text</label>
         </div>
-        <div><button type="button" class="key small" id="sceneryBtn">New scenery</button></div>
+        <p class="hint" style="margin:0">Typewriter text spells out the epitaph, then the caption, one letter at a time and holds before looping. The GIF gets longer (about 6 seconds instead of 2).</p>
       </fieldset>
 
       <p class="footnote">Everything is drawn in your browser. The same renderer runs from the command line: <code>node cli.js --help</code></p>
@@ -957,6 +971,47 @@ textarea { resize: vertical; min-height: 74px; }
     });
   }
 
+  // Green-screen look: only black and neon green. Each palette color gets a
+  // brightness level 0-4, drawn as an ordered-dither pattern
+  // (0 = black, 1 = 25% green dots, 2 = checkerboard, 3 = 75%, 4 = solid green).
+  const GREEN_SCREEN = [[0, 0, 0], [57, 255, 20]];
+  const MONO = {
+    sky0: 0, sky1: 0, sky2: 0, sky3: 1, sun: 4, sunGlow: 2, cloud: 3, cloudShade: 1,
+    mtnFar: 3, mtnFarShade: 2, mtnNear: 4, mtnNearShade: 1, snow: 4, haze: 1, star: 4, starDim: 2,
+    k: 0,
+    grass0: 2, grass1: 0, grass2: 0, grass3: 0, grass4: 0,
+    dirt0: 3, dirt1: 2, dirt2: 1,
+    stone0: 4, stone1: 4, stone2: 2, stone3: 0,
+    moss0: 2, moss1: 1,
+    wood0: 4, wood1: 2, wood2: 1,
+    canvas0: 4, canvas1: 2, canvas2: 1,
+    iron: 1,
+    skin0: 4, skin1: 3, hair: 2,
+    shirt0: 4, shirt1: 2,
+    pants0: 3, pants1: 1,
+    boot: 2, bootHi: 4,
+    hat0: 3, hat1: 2, hatBand: 0,
+    horse0: 3, horse1: 2, horse2: 1, belly: 4, mane: 1, hoof: 1, sock: 4,
+    tongue: 4,
+    buzz0: 4, buzz1: 2, buzzHead: 4,
+    fly: 4, flyWing: 2,
+    flowerY: 4, flowerW: 4, flowerP: 3,
+    metal: 4,
+    capBg: 0, capFg: 4, capDim: 2, cursor: 4,
+    ghost0: 4, ghost1: 2, ghostEye: 0,
+  };
+  const MONO_SKY = {
+    day: { sky2: 1 },
+    dusk: {},
+    night: { sky3: 0, cloud: 2 },
+  };
+
+  /** Brightness level (0-4) for every palette index, for the green-screen look. */
+  function monoLevels(sky) {
+    const over = MONO_SKY[sky] || {};
+    return Uint8Array.from(NAMES, (n) => (n in over ? over[n] : MONO[n] != null ? MONO[n] : 2));
+  }
+
   // ---------------------------------------------------------------------------
   // Utilities
   // ---------------------------------------------------------------------------
@@ -1516,8 +1571,9 @@ textarea { resize: vertical; min-height: 74px; }
   const WAGON = {
     w: 106, h: 66, ground: 65,
     wheels: [
-      { x: 31, y: tiltY(31, 33), r: 12, spin: true },
-      { x: 70, y: tiltY(70, 34), r: 10, spin: false },
+      // The rear wheel came off: that's the one lying in the grass.
+      { x: 31, y: tiltY(31, 33), r: 12, missing: true },
+      { x: 70, y: tiltY(70, 34), r: 10, spin: true },
     ],
   };
 
@@ -1582,14 +1638,39 @@ textarea { resize: vertical; min-height: 74px; }
       }
   }
 
+  /** Bare axle end where a wheel broke off: hub plus a few snapped spokes. */
+  function drawHub(L, cx, cy) {
+    for (const [a, len] of [[-2.2, 6], [-0.6, 4], [0.9, 5], [2.6, 3]]) {
+      const x1 = cx + Math.cos(a) * len, y1 = cy + Math.sin(a) * len;
+      L.thickLine(cx, cy, x1, y1, C.k, 2.6);
+    }
+    for (const [a, len] of [[-2.2, 5], [-0.6, 3], [0.9, 4], [2.6, 2]]) {
+      L.line(cx, cy, cx + Math.cos(a) * len, cy + Math.sin(a) * len, C.wood0);
+    }
+    L.disc(cx, cy, 3.4, C.k);
+    L.disc(cx, cy, 2.5, C.wood2);
+    L.disc(cx, cy, 1.1, C.iron);
+  }
+
+  /** The missing rear wheel, lying flat in the grass (seen at a low angle). */
   function drawLooseWheel(L, cx, cy) {
-    // A wheel lying flat in the grass, seen nearly edge-on.
-    L.ellipse(cx, cy, 11, 3, C.k);
-    L.ellipse(cx, cy, 10, 2.2, C.wood1);
-    L.ellipse(cx, cy, 7.5, 1.2, C.grass2);
-    L.line(cx - 7, cy, cx + 7, cy, C.wood0);
-    L.set(cx, cy, C.wood2);
-    L.set(cx - 1, cy, C.k); L.set(cx + 1, cy, C.k);
+    const rx = 13, ry = 5.2;
+    for (let y = Math.floor(cy - ry - 1); y <= Math.ceil(cy + ry + 1); y++)
+      for (let x = Math.floor(cx - rx - 1); x <= Math.ceil(cx + rx + 1); x++) {
+        const nx = (x - cx) / (rx + 0.4), ny = (y - cy) / (ry + 0.4);
+        const d = Math.sqrt(nx * nx + ny * ny);
+        if (d > 1) continue;
+        if (d > 0.9) L.set(x, y, C.k);
+        else if (d > 0.8) L.set(x, y, C.iron);
+        else if (d > 0.58) L.set(x, y, y < cy ? C.wood1 : C.wood0);
+        else if (d > 0.48) L.set(x, y, C.k);
+      }
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2 + 0.3;
+      L.line(cx + Math.cos(a) * 2.5, cy + Math.sin(a) * 1, cx + Math.cos(a) * 6.6, cy + Math.sin(a) * 2.6, C.wood0);
+    }
+    L.ellipse(cx, cy, 3, 1.6, C.k);
+    L.ellipse(cx, cy, 1.8, 0.6, C.wood2);
   }
 
   function drawCargo(L, x, y, crateX, crateY) {
@@ -1693,7 +1774,7 @@ textarea { resize: vertical; min-height: 74px; }
 
   return {
     W, H, HORIZON, C, NAMES, SKY_SETS, STONE, CROSS, WAGON,
-    Layer, mulberry32, bayer, buildPalette,
+    Layer, mulberry32, bayer, buildPalette, monoLevels, GREEN_SCREEN, drawHub,
     drawSky, drawMountains, drawGround, tuftList, drawTufts,
     buildStone, stoneHalfWidth, textWidthBetween, engrave,
     buildTraveler, buildHorse, buildWagon, drawWheel, drawLooseWheel, drawCargo, drawShadow,
@@ -1729,6 +1810,7 @@ textarea { resize: vertical; min-height: 74px; }
     wagon: { label: 'Tipped-over wagon' },
   };
   const SKIES = { day: 'Midday', dusk: 'Sundown', night: 'Moonlight' };
+  const LOOKS = { color: 'Full color', green: 'Green screen (black + neon green only)' };
 
   // Starting text for each subject (used when no name/epitaph is given).
   const PRESETS = {
@@ -1778,6 +1860,7 @@ textarea { resize: vertical; min-height: 74px; }
   const DEFAULTS = {
     subject: 'traveler',
     sky: 'dusk',
+    look: 'color', // or 'green': black and neon green only
     header: 'HERE LIES',
     caption: 'Press SPACE to pay respects',
     cross: true,
@@ -1797,6 +1880,7 @@ textarea { resize: vertical; min-height: 74px; }
     for (const [k, v] of Object.entries(opts || {})) if (v !== undefined) o[k] = v;
     if (!SUBJECTS[o.subject]) o.subject = DEFAULTS.subject;
     if (!SKIES[o.sky]) o.sky = DEFAULTS.sky;
+    if (!LOOKS[o.look]) o.look = DEFAULTS.look;
     if (o.name === undefined) o.name = PRESETS[o.subject].name;
     if (o.epitaph === undefined) o.epitaph = PRESETS[o.subject].epitaph;
     o.seed = (Number(o.seed) || 0) >>> 0;
@@ -1963,7 +2047,8 @@ textarea { resize: vertical; min-height: 74px; }
    */
   function renderFrames(options) {
     const o = withDefaults(options);
-    const palette = art.buildPalette(o.sky);
+    const mono = o.look === 'green' ? art.monoLevels(o.sky) : null;
+    const palette = mono ? art.GREEN_SCREEN : art.buildPalette(o.sky);
     const tufts = art.tuftList(o.seed);
     const stone = cached('stone:' + o.seed + ':' + o.flowers, () => art.buildStone(o.seed, o));
     const lay = layoutStone(o);
@@ -1974,6 +2059,8 @@ textarea { resize: vertical; min-height: 74px; }
     if (o.subject === 'traveler') subject = cached('traveler', art.buildTraveler);
     else if (o.subject === 'horse') subject = cached('horse', art.buildHorse);
     else subject = cached('wagon', art.buildWagon);
+    // In the two-color look, a neon edge keeps the subject from melting into the dark grass.
+    const subjectLayer = mono ? cached('halo:' + o.subject, () => subject.layer.clone().outline(C.capFg)) : subject.layer;
     const place = subjectPlacement(o.subject);
     const sx = place.x;
     const sy = place.groundY - subject.ground;
@@ -2016,17 +2103,21 @@ textarea { resize: vertical; min-height: 74px; }
       carve(L, lay, revealEpitaph);
 
       const [shx, shy, shrx, shry] = place.shadow;
-      art.drawShadow(L, sx + shx, sy + shy, shrx, shry);
+      if (!mono) art.drawShadow(L, sx + shx, sy + shy, shrx, shry); // reads as a blotch in two colors
       if (o.subject === 'wagon') {
-        art.drawLooseWheel(L, sx + 4, place.groundY + 5);
-        subject.layer.drawOnto(L, sx, sy);
-        art.drawCargo(L, sx - 4, place.groundY - 10, sx + 90, place.groundY - 11);
+        subjectLayer.drawOnto(L, sx, sy);
+        art.drawCargo(L, sx + 50, place.groundY - 4, sx + 90, place.groundY - 11);
         for (const w of art.WAGON.wheels) {
+          if (w.missing) {
+            art.drawHub(L, sx + w.x, sy + w.y);
+            continue;
+          }
           const angle = w.spin && o.critters ? (loopF / LOOP) * ((Math.PI * 2) / 10) * 2 : 0.15;
           art.drawWheel(L, sx + w.x, sy + w.y, w.r, angle, 10);
         }
+        art.drawLooseWheel(L, sx + 11, place.groundY + 2);
       } else {
-        subject.layer.drawOnto(L, sx, sy);
+        subjectLayer.drawOnto(L, sx, sy);
       }
       if (o.critters && o.subject === 'horse') art.drawFlies(L, loopF, LOOP, sx, sy);
       if (o.critters && o.subject === 'traveler') art.drawSpirit(L, loopF, LOOP, sx + subject.center[0], sy + subject.center[1]);
@@ -2034,7 +2125,16 @@ textarea { resize: vertical; min-height: 74px; }
       if (cap) drawCaption(L, cap, f, revealCaption);
 
       const out = new Uint8Array(W * H);
-      for (let i = 0; i < out.length; i++) out[i] = L.data[i] < 0 ? C.k : L.data[i];
+      if (mono) {
+        // Each color becomes a black / neon-green dither pattern by brightness.
+        for (let y = 0, i = 0; y < H; y++)
+          for (let x = 0; x < W; x++, i++) {
+            const c = L.data[i] < 0 ? C.k : L.data[i];
+            out[i] = art.bayer(x, y) < mono[c] / 4 ? 1 : 0;
+          }
+      } else {
+        for (let i = 0; i < out.length; i++) out[i] = L.data[i] < 0 ? C.k : L.data[i];
+      }
       frames.push(out);
     }
 
@@ -2061,7 +2161,7 @@ textarea { resize: vertical; min-height: 74px; }
     return { bytes, info: r.info, width: r.width * o.scale, height: r.height * o.scale };
   }
 
-  return { renderFrames, renderGif, layoutStone, withDefaults, DEFAULTS, PRESETS, EPITAPHS, SUBJECTS, SKIES, W, H };
+  return { renderFrames, renderGif, layoutStone, withDefaults, DEFAULTS, PRESETS, EPITAPHS, SUBJECTS, SKIES, LOOKS, W, H };
 });
 
 </script>
@@ -2108,6 +2208,7 @@ textarea { resize: vertical; min-height: 74px; }
   const state = {
     subject: 'traveler',
     sky: 'dusk',
+    look: 'color',
     header: 'HERE LIES',
     name: TT.PRESETS.traveler.name,
     epitaph: TT.PRESETS.traveler.epitaph,
@@ -2149,6 +2250,7 @@ textarea { resize: vertical; min-height: 74px; }
     };
     radio('subject', state.subject);
     radio('sky', state.sky);
+    radio('look', state.look);
     els.header.value = state.header;
     els.name.value = state.name;
     els.epitaph.value = state.epitaph;
@@ -2346,8 +2448,8 @@ textarea { resize: vertical; min-height: 74px; }
       els.crittersLabel.textContent = CRITTER_LABEL[state.subject];
       frameIndex = 0;
       update();
-    } else if (t.name === 'sky') {
-      state.sky = t.value;
+    } else if (t.name === 'sky' || t.name === 'look') {
+      state[t.name] = t.value;
       update({ thumbs: true });
     } else if (t.type === 'checkbox') {
       state[t.id] = t.checked;

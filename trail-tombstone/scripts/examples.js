@@ -13,6 +13,7 @@ const samples = [
   { file: 'traveler.gif', subject: 'traveler', sky: 'dusk' },
   { file: 'horse.gif', subject: 'horse', sky: 'day' },
   { file: 'wagon.gif', subject: 'wagon', sky: 'night' },
+  { file: 'green-screen.gif', subject: 'horse', sky: 'dusk', look: 'green' },
   { file: 'typewriter.gif', subject: 'traveler', sky: 'day', name: 'Ezra', epitaph: 'Said "I know a shortcut."', typewriter: true },
 ];
 

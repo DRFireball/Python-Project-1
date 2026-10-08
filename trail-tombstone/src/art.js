@@ -98,6 +98,47 @@
     });
   }
 
+  // Green-screen look: only black and neon green. Each palette color gets a
+  // brightness level 0-4, drawn as an ordered-dither pattern
+  // (0 = black, 1 = 25% green dots, 2 = checkerboard, 3 = 75%, 4 = solid green).
+  const GREEN_SCREEN = [[0, 0, 0], [57, 255, 20]];
+  const MONO = {
+    sky0: 0, sky1: 0, sky2: 0, sky3: 1, sun: 4, sunGlow: 2, cloud: 3, cloudShade: 1,
+    mtnFar: 3, mtnFarShade: 2, mtnNear: 4, mtnNearShade: 1, snow: 4, haze: 1, star: 4, starDim: 2,
+    k: 0,
+    grass0: 2, grass1: 0, grass2: 0, grass3: 0, grass4: 0,
+    dirt0: 3, dirt1: 2, dirt2: 1,
+    stone0: 4, stone1: 4, stone2: 2, stone3: 0,
+    moss0: 2, moss1: 1,
+    wood0: 4, wood1: 2, wood2: 1,
+    canvas0: 4, canvas1: 2, canvas2: 1,
+    iron: 1,
+    skin0: 4, skin1: 3, hair: 2,
+    shirt0: 4, shirt1: 2,
+    pants0: 3, pants1: 1,
+    boot: 2, bootHi: 4,
+    hat0: 3, hat1: 2, hatBand: 0,
+    horse0: 3, horse1: 2, horse2: 1, belly: 4, mane: 1, hoof: 1, sock: 4,
+    tongue: 4,
+    buzz0: 4, buzz1: 2, buzzHead: 4,
+    fly: 4, flyWing: 2,
+    flowerY: 4, flowerW: 4, flowerP: 3,
+    metal: 4,
+    capBg: 0, capFg: 4, capDim: 2, cursor: 4,
+    ghost0: 4, ghost1: 2, ghostEye: 0,
+  };
+  const MONO_SKY = {
+    day: { sky2: 1 },
+    dusk: {},
+    night: { sky3: 0, cloud: 2 },
+  };
+
+  /** Brightness level (0-4) for every palette index, for the green-screen look. */
+  function monoLevels(sky) {
+    const over = MONO_SKY[sky] || {};
+    return Uint8Array.from(NAMES, (n) => (n in over ? over[n] : MONO[n] != null ? MONO[n] : 2));
+  }
+
   // ---------------------------------------------------------------------------
   // Utilities
   // ---------------------------------------------------------------------------
@@ -657,8 +698,9 @@
   const WAGON = {
     w: 106, h: 66, ground: 65,
     wheels: [
-      { x: 31, y: tiltY(31, 33), r: 12, spin: true },
-      { x: 70, y: tiltY(70, 34), r: 10, spin: false },
+      // The rear wheel came off: that's the one lying in the grass.
+      { x: 31, y: tiltY(31, 33), r: 12, missing: true },
+      { x: 70, y: tiltY(70, 34), r: 10, spin: true },
     ],
   };
 
@@ -723,14 +765,39 @@
       }
   }
 
+  /** Bare axle end where a wheel broke off: hub plus a few snapped spokes. */
+  function drawHub(L, cx, cy) {
+    for (const [a, len] of [[-2.2, 6], [-0.6, 4], [0.9, 5], [2.6, 3]]) {
+      const x1 = cx + Math.cos(a) * len, y1 = cy + Math.sin(a) * len;
+      L.thickLine(cx, cy, x1, y1, C.k, 2.6);
+    }
+    for (const [a, len] of [[-2.2, 5], [-0.6, 3], [0.9, 4], [2.6, 2]]) {
+      L.line(cx, cy, cx + Math.cos(a) * len, cy + Math.sin(a) * len, C.wood0);
+    }
+    L.disc(cx, cy, 3.4, C.k);
+    L.disc(cx, cy, 2.5, C.wood2);
+    L.disc(cx, cy, 1.1, C.iron);
+  }
+
+  /** The missing rear wheel, lying flat in the grass (seen at a low angle). */
   function drawLooseWheel(L, cx, cy) {
-    // A wheel lying flat in the grass, seen nearly edge-on.
-    L.ellipse(cx, cy, 11, 3, C.k);
-    L.ellipse(cx, cy, 10, 2.2, C.wood1);
-    L.ellipse(cx, cy, 7.5, 1.2, C.grass2);
-    L.line(cx - 7, cy, cx + 7, cy, C.wood0);
-    L.set(cx, cy, C.wood2);
-    L.set(cx - 1, cy, C.k); L.set(cx + 1, cy, C.k);
+    const rx = 13, ry = 5.2;
+    for (let y = Math.floor(cy - ry - 1); y <= Math.ceil(cy + ry + 1); y++)
+      for (let x = Math.floor(cx - rx - 1); x <= Math.ceil(cx + rx + 1); x++) {
+        const nx = (x - cx) / (rx + 0.4), ny = (y - cy) / (ry + 0.4);
+        const d = Math.sqrt(nx * nx + ny * ny);
+        if (d > 1) continue;
+        if (d > 0.9) L.set(x, y, C.k);
+        else if (d > 0.8) L.set(x, y, C.iron);
+        else if (d > 0.58) L.set(x, y, y < cy ? C.wood1 : C.wood0);
+        else if (d > 0.48) L.set(x, y, C.k);
+      }
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2 + 0.3;
+      L.line(cx + Math.cos(a) * 2.5, cy + Math.sin(a) * 1, cx + Math.cos(a) * 6.6, cy + Math.sin(a) * 2.6, C.wood0);
+    }
+    L.ellipse(cx, cy, 3, 1.6, C.k);
+    L.ellipse(cx, cy, 1.8, 0.6, C.wood2);
   }
 
   function drawCargo(L, x, y, crateX, crateY) {
@@ -834,7 +901,7 @@
 
   return {
     W, H, HORIZON, C, NAMES, SKY_SETS, STONE, CROSS, WAGON,
-    Layer, mulberry32, bayer, buildPalette,
+    Layer, mulberry32, bayer, buildPalette, monoLevels, GREEN_SCREEN, drawHub,
     drawSky, drawMountains, drawGround, tuftList, drawTufts,
     buildStone, stoneHalfWidth, textWidthBetween, engrave,
     buildTraveler, buildHorse, buildWagon, drawWheel, drawLooseWheel, drawCargo, drawShadow,
