@@ -40,6 +40,8 @@ node cli.js --help
 | `--typewriter` | types the epitaph and caption out letter by letter |
 | `--no-cross`, `--no-flowers`, `--no-buzzards`, `--no-critters` | turn extras off (critters = the ghost, the flies, or the wagon's spinning front wheel) |
 
+**To share it:** `npm run package` writes `release/trail-tombstone-<version>.zip` (about 55 KB). Inside is `Trail Tombstone.html` (double-click to open; no install, works offline), a plain-text `README.txt`, and the optional `command-line/` version. The recipient doesn't need git or Node to use the app.
+
 **As a library:**
 
 ```js
