@@ -1,0 +1,360 @@
+<title>Trail Tombstone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Silkscreen:wght@400;700&display=swap">
+<style>
+/* Layout: a beige computer-lab desk. The preview sits in a monitor bezel on the left;
+   the controls are a ledger card on the right. One column on phones. */
+:root {
+  --desk: #d9d2c3;
+  --card: #eee8db;
+  --ink: #2a251f;
+  --ink-soft: #6c6457;
+  --line: #c9c0ae;
+  --bezel: #3a362f;
+  --bezel-hi: #565048;
+  --screen: #0e0c0a;
+  --key: #f6f1e6;
+  --key-edge: #b4ab98;
+  --accent: #2c7a4b;
+  --accent-ink: #f6f1e6;
+  --warn: #9c4320;
+  --chin-ink: #b9b0a0;
+  --chin-line: #6b645a;
+  --chin-text: #e7dfcf;
+  --led: #5fd38a;
+  --font-display: 'Silkscreen', 'Courier New', monospace;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #181613; --card: #23201c; --ink: #ede6d7; --ink-soft: #a59c8b; --line: #3a352e;
+    --bezel: #0c0b09; --bezel-hi: #2b2823; --screen: #000000; --key: #34302a; --key-edge: #0e0d0b;
+    --accent: #62c486; --accent-ink: #0c1a11; --warn: #e3926a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #181613; --card: #23201c; --ink: #ede6d7; --ink-soft: #a59c8b; --line: #3a352e;
+  --bezel: #0c0b09; --bezel-hi: #2b2823; --screen: #000000; --key: #34302a; --key-edge: #0e0d0b;
+  --accent: #62c486; --accent-ink: #0c1a11; --warn: #e3926a; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--desk);
+  color: var(--ink);
+  font: 15px/1.5 var(--font-body);
+  margin: 0;
+}
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 28px 48px;
+  display: grid;
+  gap: 24px;
+}
+header { display: grid; gap: 6px; }
+h1 {
+  font: 700 clamp(28px, 4.4vw, 42px)/1 var(--font-display);
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { margin: 0; color: var(--ink-soft); max-width: 60ch; }
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 880px) { .workbench { grid-template-columns: minmax(0, 1fr); } }
+
+/* Monitor */
+.monitor {
+  background: linear-gradient(180deg, var(--bezel-hi), var(--bezel) 18%);
+  border-radius: 22px;
+  padding: clamp(12px, 2.2vw, 24px) clamp(12px, 2.2vw, 24px) 14px;
+  box-shadow: 0 2px 0 var(--key-edge), 0 14px 30px -18px rgba(0, 0, 0, 0.55);
+}
+.screen {
+  background: var(--screen);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.6);
+}
+.screen canvas, .screen img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 3 / 2;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border-radius: 4px;
+}
+.chin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  color: var(--chin-ink);
+  font: 400 11px/1 var(--font-display);
+  letter-spacing: 0.12em;
+}
+.chin .badge { margin-left: auto; }
+.led {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--led);
+  box-shadow: 0 0 6px var(--led);
+}
+.chin button {
+  font: 400 11px/1 var(--font-display);
+  letter-spacing: 0.08em;
+  color: var(--chin-text);
+  background: transparent;
+  border: 1px solid var(--chin-line);
+  border-radius: 6px;
+  padding: 6px 9px;
+  cursor: pointer;
+}
+.chin button:hover { border-color: var(--chin-ink); }
+
+/* Output row under the monitor */
+.output { display: grid; gap: 14px; margin-top: 18px; }
+.make-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.result {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+}
+.result img { width: 100%; image-rendering: pixelated; border-radius: 6px; display: block; }
+.result .meta { display: grid; gap: 8px; min-width: 0; }
+.result .facts { font: 400 13px/1.4 var(--font-mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+.result .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 420px) { .result { grid-template-columns: minmax(0, 1fr); } }
+
+/* Keycap buttons */
+.key {
+  font: 600 14px/1 var(--font-body);
+  color: var(--ink);
+  background: var(--key);
+  border: 1px solid var(--key-edge);
+  border-radius: 9px;
+  padding: 11px 16px;
+  box-shadow: 0 3px 0 var(--key-edge);
+  cursor: pointer;
+  transition: transform 60ms ease, box-shadow 60ms ease;
+}
+.key:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--key-edge); }
+.key.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 55%, #000); }
+.key.small { padding: 8px 12px; font-size: 13px; }
+.key[disabled] { opacity: 0.55; cursor: progress; }
+select.key { padding-right: 36px; appearance: none; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+.key:focus-visible, input:focus-visible, textarea:focus-visible, .tile:has(input:focus-visible), .seg label:has(input:focus-visible), .chip:has(input:focus-visible), .chin button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Ledger card */
+.ledger {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+}
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 10px; }
+legend, .label {
+  font: 400 12px/1.2 var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0;
+  margin-bottom: 2px;
+}
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tile {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 6px 6px 9px;
+  background: var(--key);
+  border: 2px solid var(--key-edge);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  font: 600 13px/1.2 var(--font-body);
+}
+.tile canvas { width: 100%; aspect-ratio: 120 / 66; image-rendering: pixelated; border-radius: 5px; display: block; background: var(--screen); }
+.tile input { position: absolute; opacity: 0; pointer-events: none; }
+.tile:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tile:has(input:checked)::after {
+  content: ''; position: absolute; top: 11px; right: 11px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--led); box-shadow: 0 0 0 2px var(--screen), 0 0 6px var(--led);
+}
+
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--key-edge); border-radius: 9px; overflow: hidden; }
+.seg label { text-align: center; padding: 9px 6px; cursor: pointer; background: var(--key); font: 500 13px/1.2 var(--font-body); }
+.seg label + label { border-left: 1px solid var(--key-edge); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+
+.field { display: grid; gap: 6px; }
+.field-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.hint { font-size: 12.5px; color: var(--ink-soft); }
+input[type="text"], textarea {
+  width: 100%;
+  font: 500 15px/1.4 var(--font-mono);
+  color: var(--ink);
+  background: var(--key);
+  border: 1px solid var(--key-edge);
+  border-radius: 8px;
+  padding: 9px 11px;
+}
+textarea { resize: vertical; min-height: 74px; }
+.warn { color: var(--warn); font-size: 13px; margin: 0; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid var(--key-edge);
+  border-radius: 999px;
+  background: var(--key);
+  font: 500 13px/1 var(--font-body);
+  cursor: pointer;
+}
+.chip input { accent-color: var(--accent); margin: 0; }
+
+.footnote { color: var(--ink-soft); font-size: 13px; margin: 0; }
+.footnote code { font-family: var(--font-mono); font-size: 12.5px; }
+
+@media (prefers-reduced-motion: reduce) { .key { transition: none; } }
+</style>
+<!-- @body -->
+<div class="page">
+  <header>
+    <h1>Trail Tombstone</h1>
+    <p class="lede">Pick who didn't make it, carve the epitaph, and save it as an animated pixel GIF.</p>
+  </header>
+
+  <div class="workbench">
+    <section aria-label="Preview">
+      <div class="monitor">
+        <div class="screen">
+          <canvas id="preview" width="240" height="160" aria-label="Animated preview of the tombstone"></canvas>
+        </div>
+        <div class="chin">
+          <span class="led" aria-hidden="true"></span>
+          <span>PRAIRIE-80</span>
+          <span class="badge" id="badge">24 FRAMES</span>
+          <button type="button" id="playBtn" aria-pressed="true">PAUSE</button>
+        </div>
+      </div>
+
+      <div class="output">
+        <div class="make-row">
+          <button type="button" class="key primary" id="makeBtn">Make GIF</button>
+          <label class="label" for="size" style="margin:0">Size</label>
+          <select class="key small" id="size">
+            <option value="2">480 × 320</option>
+            <option value="3" selected>720 × 480</option>
+            <option value="4">960 × 640</option>
+            <option value="5">1200 × 800</option>
+          </select>
+        </div>
+        <div class="result" id="result" hidden>
+          <img id="resultImg" alt="The finished GIF">
+          <div class="meta">
+            <div class="facts" id="resultFacts"></div>
+            <div class="actions">
+              <button type="button" class="key small" id="saveBtn">Save GIF</button>
+            </div>
+            <p class="hint" id="saveNote" hidden></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <form class="ledger" id="form" autocomplete="off">
+      <fieldset>
+        <legend>Who didn't make it</legend>
+        <div class="tiles">
+          <label class="tile"><input type="radio" name="subject" value="traveler" id="subject-traveler" checked><canvas width="120" height="66" data-thumb="traveler"></canvas>Traveler</label>
+          <label class="tile"><input type="radio" name="subject" value="horse" id="subject-horse"><canvas width="120" height="66" data-thumb="horse"></canvas>Horse</label>
+          <label class="tile"><input type="radio" name="subject" value="wagon" id="subject-wagon"><canvas width="120" height="66" data-thumb="wagon"></canvas>Wagon</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sky</legend>
+        <div class="seg">
+          <label><input type="radio" name="sky" value="day" id="sky-day">Midday</label>
+          <label><input type="radio" name="sky" value="dusk" id="sky-dusk" checked>Sundown</label>
+          <label><input type="radio" name="sky" value="night" id="sky-night">Moonlight</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Carving</legend>
+        <div class="field">
+          <label class="hint" for="header">Top line</label>
+          <input type="text" id="header" maxlength="24" value="HERE LIES">
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label class="hint" for="name">Name</label>
+            <span class="hint">5 letters or fewer are carved big</span>
+          </div>
+          <input type="text" id="name" maxlength="40" value="HANK">
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label class="hint" for="epitaph">Epitaph</label>
+            <button type="button" class="key small" id="randomBtn">Random epitaph</button>
+          </div>
+          <textarea id="epitaph" rows="3" maxlength="200">Ate the questionable berries.</textarea>
+          <p class="warn" id="overflow" hidden>That's more than the stone holds. The end is cut off.</p>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Caption bar</legend>
+        <div class="field">
+          <label class="hint" for="caption">Shown in the black bar along the bottom. Leave it empty to hide the bar.</label>
+          <input type="text" id="caption" maxlength="80" value="Press SPACE to pay respects">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Extras</legend>
+        <div class="chips">
+          <label class="chip"><input type="checkbox" id="cross" checked>Cross</label>
+          <label class="chip"><input type="checkbox" id="flowers" checked>Flowers</label>
+          <label class="chip"><input type="checkbox" id="buzzards" checked>Buzzards</label>
+          <label class="chip"><input type="checkbox" id="critters" checked><span id="crittersLabel">Ghost</span></label>
+          <label class="chip"><input type="checkbox" id="typewriter">Type it out</label>
+        </div>
+        <div><button type="button" class="key small" id="sceneryBtn">New scenery</button></div>
+      </fieldset>
+
+      <p class="footnote">Everything is drawn in your browser. The same renderer runs from the command line: <code>node cli.js --help</code></p>
+    </form>
+  </div>
+</div>
+
+<script>
+/* @inline-core */
+</script>
+<script>
+/* @inline-app */
+</script>

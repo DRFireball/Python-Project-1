@@ -1,0 +1,2400 @@
+<title>Trail Tombstone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Silkscreen:wght@400;700&display=swap">
+<style>
+/* Layout: a beige computer-lab desk. The preview sits in a monitor bezel on the left;
+   the controls are a ledger card on the right. One column on phones. */
+:root {
+  --desk: #d9d2c3;
+  --card: #eee8db;
+  --ink: #2a251f;
+  --ink-soft: #6c6457;
+  --line: #c9c0ae;
+  --bezel: #3a362f;
+  --bezel-hi: #565048;
+  --screen: #0e0c0a;
+  --key: #f6f1e6;
+  --key-edge: #b4ab98;
+  --accent: #2c7a4b;
+  --accent-ink: #f6f1e6;
+  --warn: #9c4320;
+  --chin-ink: #b9b0a0;
+  --chin-line: #6b645a;
+  --chin-text: #e7dfcf;
+  --led: #5fd38a;
+  --font-display: 'Silkscreen', 'Courier New', monospace;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #181613; --card: #23201c; --ink: #ede6d7; --ink-soft: #a59c8b; --line: #3a352e;
+    --bezel: #0c0b09; --bezel-hi: #2b2823; --screen: #000000; --key: #34302a; --key-edge: #0e0d0b;
+    --accent: #62c486; --accent-ink: #0c1a11; --warn: #e3926a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #181613; --card: #23201c; --ink: #ede6d7; --ink-soft: #a59c8b; --line: #3a352e;
+  --bezel: #0c0b09; --bezel-hi: #2b2823; --screen: #000000; --key: #34302a; --key-edge: #0e0d0b;
+  --accent: #62c486; --accent-ink: #0c1a11; --warn: #e3926a; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--desk);
+  color: var(--ink);
+  font: 15px/1.5 var(--font-body);
+  margin: 0;
+}
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 28px 48px;
+  display: grid;
+  gap: 24px;
+}
+header { display: grid; gap: 6px; }
+h1 {
+  font: 700 clamp(28px, 4.4vw, 42px)/1 var(--font-display);
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { margin: 0; color: var(--ink-soft); max-width: 60ch; }
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 880px) { .workbench { grid-template-columns: minmax(0, 1fr); } }
+
+/* Monitor */
+.monitor {
+  background: linear-gradient(180deg, var(--bezel-hi), var(--bezel) 18%);
+  border-radius: 22px;
+  padding: clamp(12px, 2.2vw, 24px) clamp(12px, 2.2vw, 24px) 14px;
+  box-shadow: 0 2px 0 var(--key-edge), 0 14px 30px -18px rgba(0, 0, 0, 0.55);
+}
+.screen {
+  background: var(--screen);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.6);
+}
+.screen canvas, .screen img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 3 / 2;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border-radius: 4px;
+}
+.chin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  color: var(--chin-ink);
+  font: 400 11px/1 var(--font-display);
+  letter-spacing: 0.12em;
+}
+.chin .badge { margin-left: auto; }
+.led {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--led);
+  box-shadow: 0 0 6px var(--led);
+}
+.chin button {
+  font: 400 11px/1 var(--font-display);
+  letter-spacing: 0.08em;
+  color: var(--chin-text);
+  background: transparent;
+  border: 1px solid var(--chin-line);
+  border-radius: 6px;
+  padding: 6px 9px;
+  cursor: pointer;
+}
+.chin button:hover { border-color: var(--chin-ink); }
+
+/* Output row under the monitor */
+.output { display: grid; gap: 14px; margin-top: 18px; }
+.make-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.result {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+}
+.result img { width: 100%; image-rendering: pixelated; border-radius: 6px; display: block; }
+.result .meta { display: grid; gap: 8px; min-width: 0; }
+.result .facts { font: 400 13px/1.4 var(--font-mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+.result .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 420px) { .result { grid-template-columns: minmax(0, 1fr); } }
+
+/* Keycap buttons */
+.key {
+  font: 600 14px/1 var(--font-body);
+  color: var(--ink);
+  background: var(--key);
+  border: 1px solid var(--key-edge);
+  border-radius: 9px;
+  padding: 11px 16px;
+  box-shadow: 0 3px 0 var(--key-edge);
+  cursor: pointer;
+  transition: transform 60ms ease, box-shadow 60ms ease;
+}
+.key:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--key-edge); }
+.key.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 55%, #000); }
+.key.small { padding: 8px 12px; font-size: 13px; }
+.key[disabled] { opacity: 0.55; cursor: progress; }
+select.key { padding-right: 36px; appearance: none; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+.key:focus-visible, input:focus-visible, textarea:focus-visible, .tile:has(input:focus-visible), .seg label:has(input:focus-visible), .chip:has(input:focus-visible), .chin button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Ledger card */
+.ledger {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+}
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 10px; }
+legend, .label {
+  font: 400 12px/1.2 var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0;
+  margin-bottom: 2px;
+}
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tile {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 6px 6px 9px;
+  background: var(--key);
+  border: 2px solid var(--key-edge);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  font: 600 13px/1.2 var(--font-body);
+}
+.tile canvas { width: 100%; aspect-ratio: 120 / 66; image-rendering: pixelated; border-radius: 5px; display: block; background: var(--screen); }
+.tile input { position: absolute; opacity: 0; pointer-events: none; }
+.tile:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tile:has(input:checked)::after {
+  content: ''; position: absolute; top: 11px; right: 11px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--led); box-shadow: 0 0 0 2px var(--screen), 0 0 6px var(--led);
+}
+
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--key-edge); border-radius: 9px; overflow: hidden; }
+.seg label { text-align: center; padding: 9px 6px; cursor: pointer; background: var(--key); font: 500 13px/1.2 var(--font-body); }
+.seg label + label { border-left: 1px solid var(--key-edge); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+
+.field { display: grid; gap: 6px; }
+.field-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.hint { font-size: 12.5px; color: var(--ink-soft); }
+input[type="text"], textarea {
+  width: 100%;
+  font: 500 15px/1.4 var(--font-mono);
+  color: var(--ink);
+  background: var(--key);
+  border: 1px solid var(--key-edge);
+  border-radius: 8px;
+  padding: 9px 11px;
+}
+textarea { resize: vertical; min-height: 74px; }
+.warn { color: var(--warn); font-size: 13px; margin: 0; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid var(--key-edge);
+  border-radius: 999px;
+  background: var(--key);
+  font: 500 13px/1 var(--font-body);
+  cursor: pointer;
+}
+.chip input { accent-color: var(--accent); margin: 0; }
+
+.footnote { color: var(--ink-soft); font-size: 13px; margin: 0; }
+.footnote code { font-family: var(--font-mono); font-size: 12.5px; }
+
+@media (prefers-reduced-motion: reduce) { .key { transition: none; } }
+</style>
+<!-- @body -->
+<div class="page">
+  <header>
+    <h1>Trail Tombstone</h1>
+    <p class="lede">Pick who didn't make it, carve the epitaph, and save it as an animated pixel GIF.</p>
+  </header>
+
+  <div class="workbench">
+    <section aria-label="Preview">
+      <div class="monitor">
+        <div class="screen">
+          <canvas id="preview" width="240" height="160" aria-label="Animated preview of the tombstone"></canvas>
+        </div>
+        <div class="chin">
+          <span class="led" aria-hidden="true"></span>
+          <span>PRAIRIE-80</span>
+          <span class="badge" id="badge">24 FRAMES</span>
+          <button type="button" id="playBtn" aria-pressed="true">PAUSE</button>
+        </div>
+      </div>
+
+      <div class="output">
+        <div class="make-row">
+          <button type="button" class="key primary" id="makeBtn">Make GIF</button>
+          <label class="label" for="size" style="margin:0">Size</label>
+          <select class="key small" id="size">
+            <option value="2">480 × 320</option>
+            <option value="3" selected>720 × 480</option>
+            <option value="4">960 × 640</option>
+            <option value="5">1200 × 800</option>
+          </select>
+        </div>
+        <div class="result" id="result" hidden>
+          <img id="resultImg" alt="The finished GIF">
+          <div class="meta">
+            <div class="facts" id="resultFacts"></div>
+            <div class="actions">
+              <button type="button" class="key small" id="saveBtn">Save GIF</button>
+            </div>
+            <p class="hint" id="saveNote" hidden></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <form class="ledger" id="form" autocomplete="off">
+      <fieldset>
+        <legend>Who didn't make it</legend>
+        <div class="tiles">
+          <label class="tile"><input type="radio" name="subject" value="traveler" id="subject-traveler" checked><canvas width="120" height="66" data-thumb="traveler"></canvas>Traveler</label>
+          <label class="tile"><input type="radio" name="subject" value="horse" id="subject-horse"><canvas width="120" height="66" data-thumb="horse"></canvas>Horse</label>
+          <label class="tile"><input type="radio" name="subject" value="wagon" id="subject-wagon"><canvas width="120" height="66" data-thumb="wagon"></canvas>Wagon</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sky</legend>
+        <div class="seg">
+          <label><input type="radio" name="sky" value="day" id="sky-day">Midday</label>
+          <label><input type="radio" name="sky" value="dusk" id="sky-dusk" checked>Sundown</label>
+          <label><input type="radio" name="sky" value="night" id="sky-night">Moonlight</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Carving</legend>
+        <div class="field">
+          <label class="hint" for="header">Top line</label>
+          <input type="text" id="header" maxlength="24" value="HERE LIES">
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label class="hint" for="name">Name</label>
+            <span class="hint">5 letters or fewer are carved big</span>
+          </div>
+          <input type="text" id="name" maxlength="40" value="HANK">
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label class="hint" for="epitaph">Epitaph</label>
+            <button type="button" class="key small" id="randomBtn">Random epitaph</button>
+          </div>
+          <textarea id="epitaph" rows="3" maxlength="200">Ate the questionable berries.</textarea>
+          <p class="warn" id="overflow" hidden>That's more than the stone holds. The end is cut off.</p>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Caption bar</legend>
+        <div class="field">
+          <label class="hint" for="caption">Shown in the black bar along the bottom. Leave it empty to hide the bar.</label>
+          <input type="text" id="caption" maxlength="80" value="Press SPACE to pay respects">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Extras</legend>
+        <div class="chips">
+          <label class="chip"><input type="checkbox" id="cross" checked>Cross</label>
+          <label class="chip"><input type="checkbox" id="flowers" checked>Flowers</label>
+          <label class="chip"><input type="checkbox" id="buzzards" checked>Buzzards</label>
+          <label class="chip"><input type="checkbox" id="critters" checked><span id="crittersLabel">Ghost</span></label>
+          <label class="chip"><input type="checkbox" id="typewriter">Type it out</label>
+        </div>
+        <div><button type="button" class="key small" id="sceneryBtn">New scenery</button></div>
+      </fieldset>
+
+      <p class="footnote">Everything is drawn in your browser. The same renderer runs from the command line: <code>node cli.js --help</code></p>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ---- src/gif.js ---- */
+/*
+ * gif.js — a small, dependency-free GIF89a encoder.
+ *
+ * Works on indexed frames (one palette index per pixel), which is exactly what
+ * the pixel-art renderer produces, so no color quantization is needed.
+ *
+ * Features:
+ *   - global color table (up to 256 colors)
+ *   - infinite looping (NETSCAPE2.0 extension)
+ *   - nearest-neighbour upscaling at encode time (crisp pixels)
+ *   - frame differencing: after the first frame only the changed rectangle is
+ *     written, and unchanged pixels inside it become transparent
+ *   - identical consecutive frames are merged by adding their delays
+ *
+ * The LZW compressor mirrors giflib's EGifCompressLine so any GIF decoder can
+ * read the output.
+ */
+(function (factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else (globalThis.TrailTombstone = globalThis.TrailTombstone || {}).gif = factory();
+})(function () {
+  'use strict';
+
+  /** Growable byte buffer. */
+  class ByteWriter {
+    constructor(size) {
+      this.buf = new Uint8Array(size || 1 << 16);
+      this.len = 0;
+    }
+    ensure(n) {
+      if (this.len + n <= this.buf.length) return;
+      let cap = this.buf.length * 2;
+      while (cap < this.len + n) cap *= 2;
+      const next = new Uint8Array(cap);
+      next.set(this.buf.subarray(0, this.len));
+      this.buf = next;
+    }
+    byte(b) {
+      this.ensure(1);
+      this.buf[this.len++] = b & 0xff;
+    }
+    u16(v) {
+      this.byte(v & 0xff);
+      this.byte((v >> 8) & 0xff);
+    }
+    bytes(arr) {
+      this.ensure(arr.length);
+      this.buf.set(arr, this.len);
+      this.len += arr.length;
+    }
+    ascii(s) {
+      for (let i = 0; i < s.length; i++) this.byte(s.charCodeAt(i));
+    }
+    result() {
+      return this.buf.slice(0, this.len);
+    }
+  }
+
+  const MAX_CODE = 4095;
+
+  /**
+   * LZW-compress an array of palette indices and write it as GIF image data
+   * (min-code-size byte, sub-blocks, block terminator).
+   */
+  function writeLzw(out, pixels, minCodeSize) {
+    const clearCode = 1 << minCodeSize;
+    const eoiCode = clearCode + 1;
+    let runningCode = eoiCode + 1;
+    let runningBits = minCodeSize + 1;
+    let maxCode1 = 1 << runningBits;
+
+    // Dictionary: key = (prefixCode << minCodeSize) | pixel. A generation
+    // stamp in the high bits avoids clearing the table on every reset.
+    const table = new Int32Array(4096 << minCodeSize);
+    let gen = 1;
+
+    // Bit packer feeding 255-byte sub-blocks.
+    const block = new Uint8Array(255);
+    let blockLen = 0;
+    let bitBuf = 0;
+    let bitCount = 0;
+
+    out.byte(minCodeSize);
+
+    function flushBlock() {
+      if (blockLen === 0) return;
+      out.byte(blockLen);
+      out.bytes(block.subarray(0, blockLen));
+      blockLen = 0;
+    }
+    function pushByte(b) {
+      block[blockLen++] = b;
+      if (blockLen === 255) flushBlock();
+    }
+    function output(code) {
+      bitBuf |= code << bitCount;
+      bitCount += runningBits;
+      while (bitCount >= 8) {
+        pushByte(bitBuf & 0xff);
+        bitBuf >>>= 8;
+        bitCount -= 8;
+      }
+      if (runningCode >= maxCode1 && code <= MAX_CODE) {
+        runningBits++;
+        maxCode1 = 1 << runningBits;
+      }
+    }
+
+    output(clearCode);
+    let current = pixels[0];
+    for (let i = 1; i < pixels.length; i++) {
+      const px = pixels[i];
+      const key = (current << minCodeSize) | px;
+      const entry = table[key];
+      if (entry >>> 12 === gen) {
+        current = entry & 0xfff;
+        continue;
+      }
+      output(current);
+      current = px;
+      if (runningCode >= MAX_CODE) {
+        output(clearCode);
+        runningCode = eoiCode + 1;
+        runningBits = minCodeSize + 1;
+        maxCode1 = 1 << runningBits;
+        gen++;
+      } else {
+        table[key] = (gen << 12) | runningCode++;
+      }
+    }
+    output(current);
+    output(eoiCode);
+    if (bitCount > 0) pushByte(bitBuf & 0xff);
+    flushBlock();
+    out.byte(0); // block terminator
+  }
+
+  /** Copy a rectangle of a logical frame into an upscaled index buffer. */
+  function scaleRect(src, srcW, x0, y0, w, h, scale, transparentMask, transIndex) {
+    const outW = w * scale;
+    const outH = h * scale;
+    const out = new Uint8Array(outW * outH);
+    for (let y = 0; y < h; y++) {
+      const row = new Uint8Array(outW);
+      for (let x = 0; x < w; x++) {
+        const si = (y0 + y) * srcW + (x0 + x);
+        const v = transparentMask && transparentMask[si] ? transIndex : src[si];
+        row.fill(v, x * scale, x * scale + scale);
+      }
+      for (let r = 0; r < scale; r++) out.set(row, (y * scale + r) * outW);
+    }
+    return out;
+  }
+
+  /**
+   * Encode an animated GIF.
+   *
+   * @param {object} opts
+   * @param {number} opts.width   logical width (pixels per frame row)
+   * @param {number} opts.height  logical height
+   * @param {Array<Uint8Array>} opts.frames  palette index per logical pixel
+   * @param {Array<[number,number,number]>} opts.palette  RGB triples (<= 255 colors)
+   * @param {number|number[]} [opts.delay=10]  delay per frame in 1/100 s
+   * @param {number} [opts.scale=1]  integer upscale factor
+   * @param {number} [opts.loop=0]   0 = loop forever
+   * @returns {Uint8Array} GIF file bytes
+   */
+  function encodeGif(opts) {
+    const { width, height, frames, palette } = opts;
+    const scale = Math.max(1, Math.floor(opts.scale || 1));
+    const loop = opts.loop == null ? 0 : opts.loop;
+    const delays = frames.map((_, i) =>
+      Array.isArray(opts.delay) ? opts.delay[i] : opts.delay == null ? 10 : opts.delay
+    );
+    if (!frames.length) throw new Error('encodeGif: no frames');
+    if (palette.length > 255) throw new Error('encodeGif: palette must have at most 255 colors');
+
+    // Palette size must be a power of two; reserve one extra slot for transparency.
+    let bits = 1;
+    while (1 << bits < palette.length + 1) bits++;
+    const tableSize = 1 << bits;
+    const transIndex = tableSize - 1;
+    const minCodeSize = Math.max(2, bits);
+
+    // Merge identical consecutive frames.
+    const merged = [];
+    for (let i = 0; i < frames.length; i++) {
+      const prev = merged[merged.length - 1];
+      if (prev && equalFrames(prev.data, frames[i])) prev.delay += delays[i];
+      else merged.push({ data: frames[i], delay: delays[i] });
+    }
+
+    const out = new ByteWriter(width * height * scale * scale);
+    out.ascii('GIF89a');
+    out.u16(width * scale);
+    out.u16(height * scale);
+    out.byte(0x80 | 0x70 | (bits - 1)); // GCT flag, 8-bit color resolution, table size
+    out.byte(0); // background color index
+    out.byte(0); // pixel aspect ratio
+    for (let i = 0; i < tableSize; i++) {
+      const c = palette[i] || [0, 0, 0];
+      out.byte(c[0]);
+      out.byte(c[1]);
+      out.byte(c[2]);
+    }
+
+    if (merged.length > 1) {
+      out.byte(0x21);
+      out.byte(0xff);
+      out.byte(11);
+      out.ascii('NETSCAPE2.0');
+      out.byte(3);
+      out.byte(1);
+      out.u16(loop);
+      out.byte(0);
+    }
+
+    let prev = null;
+    for (const frame of merged) {
+      let x0 = 0, y0 = 0, w = width, h = height, mask = null;
+      if (prev) {
+        const box = diffBox(prev, frame.data, width, height);
+        if (box) {
+          ({ x0, y0, w, h } = box);
+          mask = new Uint8Array(width * height);
+          for (let y = y0; y < y0 + h; y++)
+            for (let x = x0; x < x0 + w; x++) {
+              const i = y * width + x;
+              if (prev[i] === frame.data[i]) mask[i] = 1;
+            }
+        }
+      }
+      const hasTransparency = !!mask;
+      // Graphic Control Extension
+      out.byte(0x21);
+      out.byte(0xf9);
+      out.byte(4);
+      out.byte((1 << 2) | (hasTransparency ? 1 : 0)); // disposal: leave in place
+      out.u16(Math.max(2, Math.round(frame.delay)));
+      out.byte(hasTransparency ? transIndex : 0);
+      out.byte(0);
+      // Image Descriptor
+      out.byte(0x2c);
+      out.u16(x0 * scale);
+      out.u16(y0 * scale);
+      out.u16(w * scale);
+      out.u16(h * scale);
+      out.byte(0);
+      const pixels = scaleRect(frame.data, width, x0, y0, w, h, scale, mask, transIndex);
+      writeLzw(out, pixels, minCodeSize);
+      prev = frame.data;
+    }
+
+    out.byte(0x3b);
+    return out.result();
+  }
+
+  function equalFrames(a, b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
+
+  /** Bounding box of pixels that differ between two frames (1x1 if none). */
+  function diffBox(a, b, width, height) {
+    let minX = width, minY = height, maxX = -1, maxY = -1;
+    for (let y = 0; y < height; y++) {
+      const row = y * width;
+      for (let x = 0; x < width; x++) {
+        if (a[row + x] !== b[row + x]) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return { x0: 0, y0: 0, w: 1, h: 1 };
+    return { x0: minX, y0: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+  }
+
+  return { encodeGif, writeLzw, ByteWriter };
+});
+
+/* ---- src/font.js ---- */
+/*
+ * font.js — a 5x7 bitmap font (classic character-LCD proportions) plus
+ * helpers for measuring, wrapping and drawing text into an index buffer.
+ *
+ * Each glyph is 7 rows of 5 columns; '#' is ink. Advance is 6 px, line
+ * height 9 px at scale 1.
+ */
+(function (factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else (globalThis.TrailTombstone = globalThis.TrailTombstone || {}).font = factory();
+})(function () {
+  'use strict';
+
+  const G = {
+    ' ': '.....|.....|.....|.....|.....|.....|.....',
+    '!': '..#..|..#..|..#..|..#..|.....|.....|..#..',
+    '"': '.#.#.|.#.#.|.#.#.|.....|.....|.....|.....',
+    '#': '.#.#.|.#.#.|#####|.#.#.|#####|.#.#.|.#.#.',
+    '$': '..#..|.####|#.#..|.###.|..#.#|####.|..#..',
+    '%': '##...|##..#|...#.|..#..|.#...|#..##|...##',
+    '&': '.##..|#..#.|#.#..|.#...|#.#.#|#..#.|.##.#',
+    "'": '.##..|..#..|.#...|.....|.....|.....|.....',
+    '(': '...#.|..#..|.#...|.#...|.#...|..#..|...#.',
+    ')': '.#...|..#..|...#.|...#.|...#.|..#..|.#...',
+    '*': '.....|..#..|#.#.#|.###.|#.#.#|..#..|.....',
+    '+': '.....|..#..|..#..|#####|..#..|..#..|.....',
+    ',': '.....|.....|.....|.....|.##..|..#..|.#...',
+    '-': '.....|.....|.....|.###.|.....|.....|.....',
+    '.': '.....|.....|.....|.....|.....|.##..|.##..',
+    '/': '.....|....#|...#.|..#..|.#...|#....|.....',
+    '0': '.###.|#...#|#..##|#.#.#|##..#|#...#|.###.',
+    '1': '..#..|.##..|..#..|..#..|..#..|..#..|.###.',
+    '2': '.###.|#...#|....#|...#.|..#..|.#...|#####',
+    '3': '#####|...#.|..#..|...#.|....#|#...#|.###.',
+    '4': '...#.|..##.|.#.#.|#..#.|#####|...#.|...#.',
+    '5': '#####|#....|####.|....#|....#|#...#|.###.',
+    '6': '..##.|.#...|#....|####.|#...#|#...#|.###.',
+    '7': '#####|....#|...#.|..#..|.#...|.#...|.#...',
+    '8': '.###.|#...#|#...#|.###.|#...#|#...#|.###.',
+    '9': '.###.|#...#|#...#|.####|....#|...#.|.##..',
+    ':': '.....|.##..|.##..|.....|.##..|.##..|.....',
+    ';': '.....|.##..|.##..|.....|.##..|..#..|.#...',
+    '<': '...#.|..#..|.#...|#....|.#...|..#..|...#.',
+    '=': '.....|.....|#####|.....|#####|.....|.....',
+    '>': '.#...|..#..|...#.|....#|...#.|..#..|.#...',
+    '?': '.###.|#...#|....#|...#.|..#..|.....|..#..',
+    '@': '.###.|#...#|....#|.##.#|#.#.#|#.#.#|.###.',
+    A: '.###.|#...#|#...#|#...#|#####|#...#|#...#',
+    B: '####.|#...#|#...#|####.|#...#|#...#|####.',
+    C: '.###.|#...#|#....|#....|#....|#...#|.###.',
+    D: '###..|#..#.|#...#|#...#|#...#|#..#.|###..',
+    E: '#####|#....|#....|####.|#....|#....|#####',
+    F: '#####|#....|#....|####.|#....|#....|#....',
+    G: '.###.|#...#|#....|#.###|#...#|#...#|.####',
+    H: '#...#|#...#|#...#|#####|#...#|#...#|#...#',
+    I: '.###.|..#..|..#..|..#..|..#..|..#..|.###.',
+    J: '..###|...#.|...#.|...#.|...#.|#..#.|.##..',
+    K: '#...#|#..#.|#.#..|##...|#.#..|#..#.|#...#',
+    L: '#....|#....|#....|#....|#....|#....|#####',
+    M: '#...#|##.##|#.#.#|#.#.#|#...#|#...#|#...#',
+    N: '#...#|#...#|##..#|#.#.#|#..##|#...#|#...#',
+    O: '.###.|#...#|#...#|#...#|#...#|#...#|.###.',
+    P: '####.|#...#|#...#|####.|#....|#....|#....',
+    Q: '.###.|#...#|#...#|#...#|#.#.#|#..#.|.##.#',
+    R: '####.|#...#|#...#|####.|#.#..|#..#.|#...#',
+    S: '.####|#....|#....|.###.|....#|....#|####.',
+    T: '#####|..#..|..#..|..#..|..#..|..#..|..#..',
+    U: '#...#|#...#|#...#|#...#|#...#|#...#|.###.',
+    V: '#...#|#...#|#...#|#...#|#...#|.#.#.|..#..',
+    W: '#...#|#...#|#...#|#.#.#|#.#.#|#.#.#|.#.#.',
+    X: '#...#|#...#|.#.#.|..#..|.#.#.|#...#|#...#',
+    Y: '#...#|#...#|.#.#.|..#..|..#..|..#..|..#..',
+    Z: '#####|....#|...#.|..#..|.#...|#....|#####',
+    '[': '.###.|.#...|.#...|.#...|.#...|.#...|.###.',
+    '\\': '.....|#....|.#...|..#..|...#.|....#|.....',
+    ']': '.###.|...#.|...#.|...#.|...#.|...#.|.###.',
+    '^': '..#..|.#.#.|#...#|.....|.....|.....|.....',
+    _: '.....|.....|.....|.....|.....|.....|#####',
+    '`': '.#...|..#..|...#.|.....|.....|.....|.....',
+    a: '.....|.....|.###.|....#|.####|#...#|.####',
+    b: '#....|#....|#.##.|##..#|#...#|#...#|####.',
+    c: '.....|.....|.###.|#....|#....|#...#|.###.',
+    d: '....#|....#|.##.#|#..##|#...#|#...#|.####',
+    e: '.....|.....|.###.|#...#|#####|#....|.###.',
+    f: '..##.|.#..#|.#...|###..|.#...|.#...|.#...',
+    g: '.....|.####|#...#|#...#|.####|....#|.###.',
+    h: '#....|#....|#.##.|##..#|#...#|#...#|#...#',
+    i: '..#..|.....|.##..|..#..|..#..|..#..|.###.',
+    j: '...#.|.....|..##.|...#.|...#.|#..#.|.##..',
+    k: '#....|#....|#..#.|#.#..|##...|#.#..|#..#.',
+    l: '.##..|..#..|..#..|..#..|..#..|..#..|.###.',
+    m: '.....|.....|##.#.|#.#.#|#.#.#|#...#|#...#',
+    n: '.....|.....|#.##.|##..#|#...#|#...#|#...#',
+    o: '.....|.....|.###.|#...#|#...#|#...#|.###.',
+    p: '.....|.....|####.|#...#|####.|#....|#....',
+    q: '.....|.....|.##.#|#..##|.####|....#|....#',
+    r: '.....|.....|#.##.|##..#|#....|#....|#....',
+    s: '.....|.....|.###.|#....|.###.|....#|####.',
+    t: '.#...|.#...|###..|.#...|.#...|.#..#|..##.',
+    u: '.....|.....|#...#|#...#|#...#|#..##|.##.#',
+    v: '.....|.....|#...#|#...#|#...#|.#.#.|..#..',
+    w: '.....|.....|#...#|#...#|#.#.#|#.#.#|.#.#.',
+    x: '.....|.....|#...#|.#.#.|..#..|.#.#.|#...#',
+    y: '.....|.....|#...#|#...#|.####|....#|.###.',
+    z: '.....|.....|#####|...#.|..#..|.#...|#####',
+    '{': '...#.|..#..|..#..|.#...|..#..|..#..|...#.',
+    '|': '..#..|..#..|..#..|..#..|..#..|..#..|..#..',
+    '}': '.#...|..#..|..#..|...#.|..#..|..#..|.#...',
+    '~': '.....|.....|.#...|#.#.#|...#.|.....|.....',
+    // A few extras that suit a grave marker.
+    '†': '..#..|..#..|#####|..#..|..#..|..#..|..#..', // † dagger / cross
+    '✝': '..#..|..#..|#####|..#..|..#..|..#..|..#..', // ✝
+    '♥': '.....|.#.#.|#####|#####|.###.|..#..|.....', // ♥
+    '★': '..#..|..#..|#####|.###.|.#.#.|#...#|.....', // ★
+    '·': '.....|.....|.....|..#..|.....|.....|.....', // ·
+  };
+  // Typographic punctuation people paste in from phones.
+  const ALIAS = {
+    '‘': "'", '’': "'", '“': '"', '”': '"',
+    '–': '-', '—': '-', '…': '...', ' ': ' ',
+  };
+
+  const GLYPH_W = 5;
+  const GLYPH_H = 7;
+  const ADVANCE = 6;
+  const LINE_H = 9;
+
+  const glyphs = {};
+  for (const ch of Object.keys(G)) {
+    glyphs[ch] = G[ch].split('|').map((row) => Array.from(row, (c) => c === '#'));
+  }
+
+  function normalize(text) {
+    let out = '';
+    for (const ch of String(text == null ? '' : text)) out += ALIAS[ch] != null ? ALIAS[ch] : ch;
+    return out;
+  }
+
+  function glyphFor(ch) {
+    return glyphs[ch] || glyphs['?'];
+  }
+
+  /** Width in pixels of a single line at the given scale. */
+  function measure(text, scale) {
+    const s = scale || 1;
+    const n = Array.from(normalize(text)).length;
+    return n === 0 ? 0 : (n * ADVANCE - 1) * s;
+  }
+
+  /**
+   * Draw one line of text into an index buffer.
+   * @param {object} target  { w, h, data: Int16Array|Uint8Array }
+   */
+  function drawText(target, text, x, y, color, scale) {
+    const s = scale || 1;
+    let cx = x;
+    for (const ch of normalize(text)) {
+      const g = glyphFor(ch);
+      for (let gy = 0; gy < GLYPH_H; gy++)
+        for (let gx = 0; gx < GLYPH_W; gx++) {
+          if (!g[gy][gx]) continue;
+          for (let sy = 0; sy < s; sy++)
+            for (let sx = 0; sx < s; sx++) {
+              const px = cx + gx * s + sx;
+              const py = y + gy * s + sy;
+              if (px >= 0 && py >= 0 && px < target.w && py < target.h) target.data[py * target.w + px] = color;
+            }
+        }
+      cx += ADVANCE * s;
+    }
+  }
+
+  /**
+   * Greedy word-wrap. `widthFor(lineIndex)` returns the max pixel width of
+   * each line, which lets text follow the rounded top of a headstone.
+   * Explicit newlines are kept. Over-long words are hard-broken.
+   */
+  function wrap(text, widthFor, scale) {
+    const s = scale || 1;
+    const maxChars = (i) => Math.max(1, Math.floor((widthFor(i) / s + 1) / ADVANCE));
+    const lines = [];
+    const paragraphs = normalize(text).split(/\r?\n/);
+    for (const para of paragraphs) {
+      const words = para.trim().split(/\s+/).filter(Boolean);
+      if (!words.length) {
+        lines.push('');
+        continue;
+      }
+      let line = '';
+      for (let word of words) {
+        while (true) {
+          const limit = maxChars(lines.length);
+          const candidate = line ? line + ' ' + word : word;
+          if (Array.from(candidate).length <= limit) {
+            line = candidate;
+            break;
+          }
+          if (line) {
+            lines.push(line);
+            line = '';
+            continue;
+          }
+          const chars = Array.from(word);
+          lines.push(chars.slice(0, limit).join(''));
+          word = chars.slice(limit).join('');
+          if (!word) break;
+        }
+      }
+      if (line) lines.push(line);
+    }
+    while (lines.length && lines[lines.length - 1] === '') lines.pop();
+    return lines;
+  }
+
+  return { measure, drawText, wrap, normalize, GLYPH_W, GLYPH_H, ADVANCE, LINE_H };
+});
+
+/* ---- src/art.js ---- */
+/*
+ * art.js — palette, drawing primitives and the procedural pixel art:
+ * prairie backdrop, headstone, and the three "departed" subjects
+ * (a fallen traveler, a horse, a tipped-over covered wagon).
+ *
+ * Everything draws into Layer objects holding palette indices (-1 = empty),
+ * so the output stays a strict indexed palette that encodes cleanly to GIF.
+ */
+(function (factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else (globalThis.TrailTombstone = globalThis.TrailTombstone || {}).art = factory();
+})(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------------------
+  // Palette
+  // ---------------------------------------------------------------------------
+
+  // Sky-dependent colors, set explicitly per time of day.
+  const SKY_SETS = {
+    day: {
+      sky0: '#3f76c2', sky1: '#5e93d4', sky2: '#8ab6e3', sky3: '#c3dcef',
+      sun: '#fff6cf', sunGlow: '#f6e6a6', cloud: '#ffffff', cloudShade: '#d3e1ef',
+      mtnFar: '#93a8cb', mtnFarShade: '#7489b0', mtnNear: '#7e9a8a', mtnNearShade: '#688572',
+      snow: '#f1f5fb', haze: '#c4d39a', star: '#ffffff', starDim: '#9fb6dc',
+    },
+    dusk: {
+      sky0: '#2a1e4d', sky1: '#6b3a6e', sky2: '#c25e5e', sky3: '#f29b56',
+      sun: '#ffd77a', sunGlow: '#ffb35c', cloud: '#f5a87c', cloudShade: '#b6607a',
+      mtnFar: '#6a4777', mtnFarShade: '#4f3463', mtnNear: '#4c4562', mtnNearShade: '#3a3550',
+      snow: '#f0b9a8', haze: '#9a8a5a', star: '#fff2d6', starDim: '#b98aa8',
+    },
+    night: {
+      sky0: '#060a1c', sky1: '#0d1533', sky2: '#16224a', sky3: '#22325f',
+      sun: '#e8edf7', sunGlow: '#9aa9cc', cloud: '#3b4775', cloudShade: '#2b3560',
+      mtnFar: '#1d2648', mtnFarShade: '#151c3a', mtnNear: '#17213a', mtnNearShade: '#111a30',
+      snow: '#a6b2d4', haze: '#2c3d43', star: '#ffffff', starDim: '#6f7fae',
+    },
+  };
+
+  // Colors lit by the sky (tinted at dusk and night).
+  const LIT = {
+    k: '#1b1512',
+    grass0: '#b9d06a', grass1: '#93b04e', grass2: '#6e8e3a', grass3: '#4e6b2a', grass4: '#36501e',
+    dirt0: '#bf9a64', dirt1: '#9a7443', dirt2: '#6f532f',
+    stone0: '#e2ded2', stone1: '#bdb8ab', stone2: '#959082', stone3: '#615d55',
+    moss0: '#7b9a3c', moss1: '#55722b',
+    wood0: '#c08850', wood1: '#946035', wood2: '#62401f',
+    canvas0: '#f2ead4', canvas1: '#d4c6a4', canvas2: '#a8977a',
+    iron: '#4b4643',
+    skin0: '#eab68b', skin1: '#c98b62',
+    hair: '#5b3b22',
+    shirt0: '#be4a3c', shirt1: '#8e3129',
+    pants0: '#56679a', pants1: '#3d4a73',
+    boot: '#43291a', bootHi: '#6b4430',
+    hat0: '#93714a', hat1: '#6c5134', hatBand: '#2d2018',
+    horse0: '#a86a3c', horse1: '#7f4a28', horse2: '#5a3219', belly: '#cf9c6c',
+    mane: '#2f1e13', hoof: '#2b2622', sock: '#efe7d8',
+    tongue: '#e57b8c',
+    buzz0: '#2a2426', buzz1: '#4d4446', buzzHead: '#cf7a6e',
+    fly: '#141414', flyWing: '#d6e2ea',
+    flowerY: '#f3d24c', flowerW: '#f5f0e3', flowerP: '#c784c4',
+    metal: '#a9b0b5',
+  };
+
+  // Interface colors — never tinted.
+  const UI = {
+    capBg: '#0f0c0a', capFg: '#f3ebd7', capDim: '#8e8675', cursor: '#f3ebd7',
+    ghost0: '#f1f6ff', ghost1: '#b8c7ea', ghostEye: '#24304f',
+  };
+
+  const NAMES = [...Object.keys(SKY_SETS.day), ...Object.keys(LIT), ...Object.keys(UI)];
+  const C = {};
+  NAMES.forEach((n, i) => (C[n] = i));
+
+  const TINTS = {
+    day: { mul: [1, 1, 1], to: [0, 0, 0], amt: 0 },
+    dusk: { mul: [1.0, 0.8, 0.7], to: [255, 128, 84], amt: 0.1 },
+    night: { mul: [0.4, 0.48, 0.74], to: [36, 52, 110], amt: 0.08 },
+  };
+
+  function hexToRgb(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  function buildPalette(sky) {
+    const set = SKY_SETS[sky] || SKY_SETS.day;
+    const tint = TINTS[sky] || TINTS.day;
+    return NAMES.map((name) => {
+      if (name in set) return hexToRgb(set[name]);
+      if (name in UI) return hexToRgb(UI[name]);
+      const rgb = hexToRgb(LIT[name]);
+      return rgb.map((v, i) => {
+        const m = v * tint.mul[i];
+        return Math.max(0, Math.min(255, Math.round(m + (tint.to[i] - m) * tint.amt)));
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Utilities
+  // ---------------------------------------------------------------------------
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+  const bayer = (x, y) => BAYER4[(y & 3) * 4 + (x & 3)];
+
+  class Layer {
+    constructor(w, h, fill) {
+      this.w = w;
+      this.h = h;
+      this.data = new Int16Array(w * h).fill(fill == null ? -1 : fill);
+    }
+    clone() {
+      const l = new Layer(this.w, this.h);
+      l.data.set(this.data);
+      return l;
+    }
+    inb(x, y) {
+      return x >= 0 && y >= 0 && x < this.w && y < this.h;
+    }
+    set(x, y, c) {
+      x = Math.round(x);
+      y = Math.round(y);
+      if (this.inb(x, y)) this.data[y * this.w + x] = c;
+    }
+    get(x, y) {
+      return this.inb(x, y) ? this.data[y * this.w + x] : -1;
+    }
+    rect(x, y, w, h, c) {
+      for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) this.set(xx, yy, c);
+    }
+    line(x0, y0, x1, y1, c) {
+      x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+      const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+      const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+      let err = dx + dy;
+      for (;;) {
+        this.set(x0, y0, c);
+        if (x0 === x1 && y0 === y1) break;
+        const e2 = 2 * err;
+        if (e2 >= dy) { err += dy; x0 += sx; }
+        if (e2 <= dx) { err += dx; y0 += sy; }
+      }
+    }
+    thickLine(x0, y0, x1, y1, c, t) {
+      const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
+      for (let i = 0; i <= n; i++) {
+        const x = x0 + ((x1 - x0) * i) / n;
+        const y = y0 + ((y1 - y0) * i) / n;
+        this.disc(x, y, t / 2, c);
+      }
+    }
+    disc(cx, cy, r, c) {
+      for (let y = Math.floor(cy - r); y <= Math.ceil(cy + r); y++)
+        for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++)
+          if ((x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r + 0.25) this.set(x, y, c);
+    }
+    ellipse(cx, cy, rx, ry, c, test) {
+      for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++)
+        for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
+          const nx = (x - cx) / (rx + 0.35), ny = (y - cy) / (ry + 0.35);
+          if (nx * nx + ny * ny <= 1 && (!test || test(x, y))) this.set(x, y, c);
+        }
+    }
+    poly(points, c) {
+      let minY = Infinity, maxY = -Infinity;
+      for (const [, y] of points) { minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
+      for (let y = Math.floor(minY); y <= Math.ceil(maxY); y++) {
+        const xs = [];
+        const sy = y + 0.5;
+        for (let i = 0; i < points.length; i++) {
+          const [x0, y0] = points[i];
+          const [x1, y1] = points[(i + 1) % points.length];
+          if ((y0 <= sy && y1 > sy) || (y1 <= sy && y0 > sy)) xs.push(x0 + ((sy - y0) * (x1 - x0)) / (y1 - y0));
+        }
+        xs.sort((a, b) => a - b);
+        for (let i = 0; i + 1 < xs.length; i += 2)
+          for (let x = Math.round(xs[i]); x < Math.round(xs[i + 1]); x++) this.set(x, y, c);
+      }
+    }
+    /** Recolor every filled pixel via fn(x, y, color) -> color. */
+    map(fn) {
+      for (let y = 0; y < this.h; y++)
+        for (let x = 0; x < this.w; x++) {
+          const i = y * this.w + x;
+          if (this.data[i] >= 0) this.data[i] = fn(x, y, this.data[i]);
+        }
+    }
+    /** Blit an ASCII sprite. `key` maps characters to palette indices. */
+    sprite(rows, key, ox, oy, flipX) {
+      rows.forEach((row, y) => {
+        const chars = Array.from(row);
+        chars.forEach((ch, x) => {
+          if (key[ch] == null) return;
+          this.set(ox + (flipX ? chars.length - 1 - x : x), oy + y, key[ch]);
+        });
+      });
+    }
+    /** Add a 1px outline (4-neighbourhood) around all filled pixels. */
+    outline(c, diag) {
+      const src = this.data.slice();
+      const w = this.w, h = this.h;
+      const filled = (x, y) => x >= 0 && y >= 0 && x < w && y < h && src[y * w + x] >= 0;
+      for (let y = 0; y < h; y++)
+        for (let x = 0; x < w; x++) {
+          if (src[y * w + x] >= 0) continue;
+          let edge = filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1);
+          if (!edge && diag) edge = filled(x - 1, y - 1) || filled(x + 1, y - 1) || filled(x - 1, y + 1) || filled(x + 1, y + 1);
+          if (edge) this.data[y * w + x] = c;
+        }
+      return this;
+    }
+    /** Composite onto another layer. `dither` 0..1 keeps that share of pixels. */
+    drawOnto(target, ox, oy, dither) {
+      for (let y = 0; y < this.h; y++)
+        for (let x = 0; x < this.w; x++) {
+          const c = this.data[y * this.w + x];
+          if (c < 0) continue;
+          const tx = x + ox, ty = y + oy;
+          if (dither != null && dither < 1 && bayer(tx, ty) >= dither) continue;
+          target.set(tx, ty, c);
+        }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Backdrop
+  // ---------------------------------------------------------------------------
+
+  const W = 240;
+  const H = 160;
+  const HORIZON = 88;
+
+  function drawSky(L, sky, frame, seed) {
+    const bands = [C.sky0, C.sky1, C.sky2, C.sky3];
+    for (let y = 0; y < HORIZON; y++) {
+      const t = (y / (HORIZON - 1)) * (bands.length - 1);
+      const i = Math.min(bands.length - 2, Math.floor(t));
+      let f = t - i;
+      f = Math.max(0, Math.min(1, (f - 0.3) / 0.4)); // solid bands, dithered seams
+      for (let x = 0; x < W; x++) L.set(x, y, f > bayer(x, y) ? bands[i + 1] : bands[i]);
+    }
+
+    if (sky === 'night') {
+      const rnd = mulberry32(seed ^ 0x51a7);
+      for (let i = 0; i < 70; i++) {
+        const x = Math.floor(rnd() * W);
+        const y = Math.floor(rnd() * (HORIZON - 26));
+        const bright = rnd() < 0.3;
+        const sparkle = rnd() < 0.5;
+        const twinkle = (frame + i * 7) % 24 < 3;
+        L.set(x, y, twinkle ? C.starDim : bright ? C.star : C.starDim);
+        if (bright && !twinkle && sparkle) {
+          L.set(x - 1, y, C.starDim); L.set(x + 1, y, C.starDim);
+          L.set(x, y - 1, C.starDim); L.set(x, y + 1, C.starDim);
+        }
+      }
+      // crescent moon
+      const moon = new Layer(24, 24);
+      moon.disc(12, 12, 8.5, C.sun);
+      moon.map((x, y, c) => (x + y > 27 ? C.sunGlow : c));
+      moon.disc(16, 9, 7.5, -1);
+      moon.drawOnto(L, 186, 8);
+    } else if (sky === 'dusk') {
+      // big low sun sinking behind the ridge
+      for (let r = 17; r >= 0; r--) {
+        const col = r > 14 ? C.sunGlow : C.sun;
+        for (let y = -r; y <= r; y++)
+          for (let x = -r; x <= r; x++)
+            if (x * x + y * y <= r * r && (r <= 14 || bayer(x, y) > 0.5)) L.set(176 + x, 70 + y, col);
+      }
+      // horizontal bands across the sun
+      for (const yy of [66, 71, 75, 78]) for (let x = 160; x < 194; x++) if (L.get(x, yy) === C.sun) L.set(x, yy, C.sunGlow);
+    } else {
+      for (let y = -12; y <= 12; y++)
+        for (let x = -12; x <= 12; x++) {
+          const d = Math.sqrt(x * x + y * y);
+          if (d <= 7.5) L.set(204 + x, 22 + y, C.sun);
+          else if (d <= 10.5 && bayer(x, y) > 0.55) L.set(204 + x, 22 + y, C.sunGlow);
+        }
+    }
+
+    if (sky !== 'night') {
+      drawCloud(L, 22, 20, 1.0);
+      drawCloud(L, 120, 12, 0.75);
+      drawCloud(L, 172, 40, 0.55);
+    }
+  }
+
+  function drawCloud(L, x, y, s) {
+    const cl = new Layer(70, 24);
+    const puffs = [[10, 15, 7], [20, 10, 9], [32, 8, 10], [44, 11, 8], [54, 15, 6], [30, 15, 8]];
+    for (const [px, py, r] of puffs) cl.disc(px * s + 4, py * s + 4, r * s, C.cloud);
+    const base = Math.round(18 * s + 4);
+    cl.map((cx, cy, c) => (cy > base ? -1 : cy >= base - Math.max(1, Math.round(2 * s)) ? C.cloudShade : c));
+    cl.drawOnto(L, x, y);
+  }
+
+  const TRAIL_VX = 182; // where the wagon ruts meet the horizon
+
+  function drawMountains(L, seed) {
+    // A range of sharp peaks, lit from the left, with a low pass where the trail leads.
+    const rnd = mulberry32(seed * 3 + 1);
+    const peaks = [];
+    for (let x = -24; x < W + 30; x += 16 + rnd() * 26) {
+      let h = 14 + rnd() * 24;
+      const nearPass = Math.abs(x - TRAIL_VX) < 26;
+      if (nearPass) h = 6 + rnd() * 6;
+      peaks.push({ x, h, s: 0.75 + rnd() * 0.55 });
+    }
+    const jitter = mulberry32(seed * 5 + 9);
+    const base = 82;
+    for (let px = 0; px < W; px++) {
+      let best = -Infinity, peak = null;
+      for (const p of peaks) {
+        const v = p.h - Math.abs(px - p.x) * p.s;
+        if (v > best) { best = v; peak = p; }
+      }
+      const top = Math.round(base - best + (jitter() < 0.25 ? 1 : 0));
+      const lit = px <= peak.x;
+      const snowDepth = peak.h > 24 ? Math.round((peak.h - 20) * 0.45) : 0;
+      const peakTop = base - peak.h;
+      for (let y = Math.max(0, top); y < HORIZON; y++) {
+        let c = lit ? C.mtnFar : C.mtnFarShade;
+        const depth = y - peakTop;
+        if (depth < snowDepth || (depth < snowDepth + 2 && bayer(px, y) > 0.5)) c = lit ? C.snow : bayer(px, y) > 0.5 ? C.snow : C.mtnFar;
+        L.set(px, y, c);
+      }
+    }
+    // Rolling foothills
+    const ph = seed % 97;
+    for (let x = 0; x < W; x++) {
+      const top = Math.round(78 + 2.6 * Math.sin(x / 21 + ph) + 1.6 * Math.sin(x / 8.3 + ph * 2));
+      for (let y = top; y < HORIZON; y++) {
+        const c = y - top < 2 ? C.mtnNear : y > HORIZON - 4 && bayer(x, y) > 0.5 ? C.haze : C.mtnNearShade;
+        L.set(x, y, c);
+      }
+    }
+  }
+
+  function drawGround(L, seed) {
+    const rnd = mulberry32(seed ^ 0x9e37);
+    for (let y = HORIZON; y < H; y++) {
+      const t = (y - HORIZON) / (H - HORIZON);
+      for (let x = 0; x < W; x++) {
+        let c = C.grass1;
+        if (t < 0.12) c = (t / 0.12) > bayer(x, y) ? C.grass1 : C.haze;
+        else if (t < 0.22) c = ((t - 0.12) / 0.1) > bayer(x, y) ? C.grass1 : C.grass0;
+        else if (t > 0.8) c = ((t - 0.8) / 0.2) * 0.7 > bayer(x, y) ? C.grass2 : C.grass1;
+        const r = rnd();
+        if (t > 0.1 && r < 0.05) c = C.grass2;
+        else if (t > 0.1 && r < 0.075) c = C.grass0;
+        L.set(x, y, c);
+      }
+    }
+    // Wagon-wheel ruts converging on the horizon.
+    const vx = TRAIL_VX;
+    for (let y = HORIZON; y < H; y++) {
+      const t = (y - HORIZON) / (H - HORIZON);
+      const half = 0.6 + t * 1.9;
+      for (const bx of [118, 160]) {
+        const cx = vx + (bx - vx) * t + (bx < vx ? -1 : 1) * 1.5 * (1 - t);
+        for (let x = Math.round(cx - half); x <= Math.round(cx + half); x++) {
+          const edge = x === Math.round(cx - half);
+          L.set(x, y, edge && t > 0.25 ? C.dirt2 : t < 0.2 ? C.dirt0 : C.dirt1);
+        }
+      }
+    }
+  }
+
+  function tuftList(seed) {
+    const rnd = mulberry32(seed ^ 0x77aa);
+    const list = [];
+    for (let i = 0; i < 46; i++) {
+      const y = HORIZON + 6 + Math.floor(Math.pow(rnd(), 0.8) * (H - HORIZON - 8));
+      list.push({ x: Math.floor(rnd() * W), y, phase: Math.floor(rnd() * 12), flower: rnd() < 0.22 ? Math.floor(rnd() * 3) : -1 });
+    }
+    return list;
+  }
+
+  function drawTufts(L, tufts, frame) {
+    for (const t of tufts) {
+      const size = 1 + Math.round(((t.y - HORIZON) / (H - HORIZON)) * 4);
+      const sway = (Math.floor((frame + t.phase) / 6) % 2) * (size > 2 ? 1 : 0);
+      for (const dx of [-2, 0, 2]) {
+        const h = dx === 0 ? size + 1 : size;
+        const lean = dx === 0 ? 0 : dx / 2;
+        for (let i = 0; i < h; i++) {
+          const tip = i === h - 1;
+          const x = t.x + dx * (size > 2 ? 1 : 0.5) + (tip ? lean + sway : i > h / 2 ? lean : 0);
+          L.set(x, t.y - i, tip ? C.grass0 : i === 0 ? C.grass4 : C.grass3);
+        }
+      }
+      if (t.flower >= 0) {
+        const fx = t.x + 3, fy = t.y - size - 1;
+        const col = [C.flowerY, C.flowerW, C.flowerP][t.flower];
+        L.set(fx, fy + 1, C.grass3);
+        L.set(fx, fy, col);
+        if (size > 2) { L.set(fx - 1, fy, col); L.set(fx + 1, fy, col); L.set(fx, fy - 1, col); }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Headstone
+  // ---------------------------------------------------------------------------
+
+  const STONE = { cx: 66, cy: 88, r: 46, bottom: 131, margin: 7 };
+
+  /** Half-width of the stone face at row y (0 above the arch). */
+  function stoneHalfWidth(y) {
+    if (y >= STONE.cy) return STONE.r;
+    const dy = STONE.cy - y;
+    return dy > STONE.r ? 0 : Math.sqrt(STONE.r * STONE.r - dy * dy);
+  }
+
+  /** Usable text width for a band of rows [y0, y1]. */
+  function textWidthBetween(y0, y1) {
+    let hw = Infinity;
+    for (let y = y0; y <= y1; y++) hw = Math.min(hw, stoneHalfWidth(y));
+    return Math.max(0, Math.floor(2 * (hw - STONE.margin)));
+  }
+
+  function buildStone(seed, opts) {
+    const L = new Layer(W, H);
+    const { cx, cy, r, bottom } = STONE;
+    const rnd = mulberry32(seed ^ 0x3c3c);
+    // Body
+    for (let y = cy - r; y < bottom; y++) {
+      const hw = stoneHalfWidth(y);
+      if (hw <= 0) continue;
+      const x0 = Math.round(cx - hw), x1 = Math.round(cx + hw);
+      for (let x = x0; x <= x1; x++) {
+        let c = C.stone1;
+        const fromL = x - x0, fromR = x1 - x;
+        if (fromR < 1) c = C.stone3;
+        else if (fromR < 5) c = fromR < 3 || bayer(x, y) > 0.5 ? C.stone2 : C.stone1;
+        else if (fromL < 3) c = C.stone0;
+        else if (y < cy && y - (cy - Math.sqrt(Math.max(0, r * r - (x - cx) * (x - cx)))) < 3 && x < cx + 14) c = C.stone0;
+        const n = rnd();
+        if (c === C.stone1 && n < 0.035) c = C.stone2;
+        else if (c === C.stone1 && n < 0.05) c = C.stone0;
+        L.set(x, y, c);
+      }
+    }
+    // A crack running in from the right edge, clear of the lettering
+    let kx = cx + r - 1, ky = cy - 12;
+    const crack = mulberry32(seed ^ 0x1f1f);
+    for (let i = 0; i < 15; i++) {
+      L.set(kx, ky, C.stone3);
+      L.set(kx - 1, ky + 1, C.stone0);
+      ky += 1;
+      if (kx > cx + r - 5 && crack() < 0.55) kx -= 1;
+      else if (kx < cx + r - 1 && crack() < 0.25) kx += 1;
+    }
+    // Moss creeping up the bottom-left
+    const moss = mulberry32(seed ^ 0x2d2d);
+    for (let x = cx - r; x < cx - r + 30; x++) {
+      const h = Math.floor(moss() * 6 + (30 - (x - (cx - r))) / 5);
+      for (let y = bottom - 1; y > bottom - 1 - h; y--)
+        if (L.get(x, y) >= 0 && moss() < 0.75) L.set(x, y, moss() < 0.5 ? C.moss0 : C.moss1);
+    }
+    L.outline(C.k);
+    // Plinth
+    const px0 = cx - r - 7, px1 = cx + r + 7;
+    const plinth = new Layer(W, H);
+    plinth.rect(px0, bottom, px1 - px0 + 1, 7, C.stone2);
+    plinth.rect(px0, bottom, px1 - px0 + 1, 2, C.stone1);
+    plinth.rect(px0, bottom, 2, 7, C.stone1);
+    plinth.rect(px1 - 2, bottom, 3, 7, C.stone3);
+    plinth.outline(C.k);
+    plinth.drawOnto(L, 0, 0);
+    // Grave mound in front
+    const mound = new Layer(W, H);
+    mound.ellipse(cx + 2, bottom + 13, r + 4, 8, C.dirt1, (x, y) => y >= bottom + 5);
+    mound.map((x, y, c) => (y < bottom + 8 ? (bayer(x, y) > 0.4 ? C.dirt0 : C.dirt1) : y > bottom + 14 ? C.dirt2 : c));
+    const mr = mulberry32(seed ^ 0x4b4b);
+    mound.map((x, y, c) => (mr() < 0.06 ? C.dirt2 : mr() < 0.03 ? C.stone2 : c));
+    mound.outline(C.k);
+    mound.drawOnto(L, 0, 0);
+    // Wildflowers laid on the mound
+    if (opts.flowers !== false) {
+      const fx = cx + 22, fy = bottom + 8;
+      const bouquet = [
+        ' y w ',
+        'yYwWw',
+        ' y.w ',
+        '  g  ',
+        ' g g ',
+      ];
+      L.sprite(bouquet, { y: C.flowerY, Y: C.flowerY, w: C.flowerW, W: C.flowerW, g: C.grass3, '.': C.grass2 }, fx, fy - 4);
+      L.sprite(['p.p', '.g.'], { p: C.flowerP, g: C.grass3 }, cx - 30, bottom + 7);
+    }
+    return L;
+  }
+
+  /** Engrave text into the scene: dark cut with a light lower-right lip. */
+  function engrave(L, mask) {
+    for (let y = 0; y < mask.h; y++)
+      for (let x = 0; x < mask.w; x++)
+        if (mask.data[y * mask.w + x] >= 0 && mask.get(x + 1, y + 1) < 0) L.set(x + 1, y + 1, C.stone0);
+    for (let y = 0; y < mask.h; y++)
+      for (let x = 0; x < mask.w; x++) if (mask.data[y * mask.w + x] >= 0) L.set(x, y, C.stone3);
+  }
+
+  const CROSS = ['..#..', '.###.', '..#..', '..#..', '..#..', '..#..'];
+
+  // ---------------------------------------------------------------------------
+  // Subjects
+  // ---------------------------------------------------------------------------
+
+  /** X-shaped eye centred on (x, y). */
+  function xEye(L, x, y, c) {
+    L.set(x - 1, y - 1, c); L.set(x + 1, y - 1, c); L.set(x, y, c); L.set(x - 1, y + 1, c); L.set(x + 1, y + 1, c);
+  }
+
+  function buildTraveler() {
+    // Sprawled on his back, seen from a little above: head left, boots right.
+    const L = new Layer(100, 46);
+    const cy = 23;
+    // Hat, knocked off and lying brim-down above the head
+    L.ellipse(9, 6, 7, 4.2, C.hat1);
+    L.ellipse(9, 5, 4.2, 2.6, C.hat0);
+    L.ellipse(9, 6.5, 4.4, 1, C.hatBand, (x, y) => y === 7);
+    // Arms flung out (drawn first so the torso overlaps the shoulders)
+    L.thickLine(33, cy - 6, 40, cy - 15, C.shirt1, 6);
+    L.thickLine(40, cy - 15, 49, cy - 19, C.shirt1, 5);
+    L.disc(52, cy - 20, 2.6, C.skin0);
+    L.thickLine(33, cy + 7, 39, cy + 15, C.shirt1, 6);
+    L.thickLine(39, cy + 15, 47, cy + 19, C.shirt1, 5);
+    L.disc(50, cy + 20, 2.6, C.skin0);
+    // Legs, splayed a little
+    L.thickLine(54, cy - 4, 79, cy - 9, C.pants0, 8);
+    L.thickLine(54, cy + 4, 79, cy + 9, C.pants0, 8);
+    L.map((x, y, c) => (c === C.pants0 && (y === cy - 5 - Math.round((x - 54) / 5) || y > cy + 9 + Math.round((x - 54) / 5)) ? C.pants1 : c));
+    L.rect(63, cy + 4, 5, 4, C.canvas1); // knee patch
+    // Boots, toes to the sky
+    for (const [bx, by] of [[83, cy - 10], [83, cy + 10]]) {
+      L.ellipse(bx, by, 5, 4.6, C.boot);
+      L.ellipse(bx - 1, by - 1, 2, 1.5, C.bootHi);
+      L.set(bx + 5, by + 1, C.metal); L.set(bx + 6, by + 1, C.metal); // spur
+    }
+    // Torso: red flannel with suspenders and buttons
+    L.rect(26, cy - 9, 29, 19, C.shirt0);
+    L.set(26, cy - 9, -1); L.set(26, cy + 9, -1);
+    L.map((x, y, c) => {
+      if (c !== C.shirt0 || x < 26 || x > 54) return c;
+      if ((x - 26) % 6 === 3 || (y - cy + 9) % 6 === 3) return C.shirt1;
+      return c;
+    });
+    L.rect(26, cy - 6, 29, 2, C.hatBand); // suspenders
+    L.rect(26, cy + 5, 29, 2, C.hatBand);
+    for (let x = 30; x < 54; x += 6) L.set(x, cy, C.canvas0); // buttons
+    // Belt
+    L.rect(52, cy - 9, 3, 19, C.hatBand);
+    L.rect(52, cy - 1, 3, 3, C.flowerY);
+    // Neckerchief
+    L.rect(22, cy - 6, 5, 13, C.pants0);
+    L.poly([[26, cy - 3], [32, cy], [26, cy + 3]], C.pants0);
+    // Head (crown to the left, chin to the right)
+    const hx = 15;
+    L.ellipse(hx, cy, 8, 8.5, C.skin0);
+    L.map((x, y, c) => {
+      if (c !== C.skin0 || x > hx + 9) return c;
+      const dx = x - hx, dy = y - cy;
+      if (dx < -3 || (dx < 0 && Math.abs(dy) > 6)) return C.hair;
+      if (dx > 4 && Math.abs(dy) > 5) return C.skin1;
+      return c;
+    });
+    L.disc(hx - 1, cy - 9, 1.6, C.skin1); // ears
+    L.disc(hx - 1, cy + 9, 1.6, C.skin1);
+    L.outline(C.k);
+    // Face details after the outline
+    xEye(L, hx + 1, cy - 4, C.k);
+    xEye(L, hx + 1, cy + 4, C.k);
+    L.set(hx + 4, cy, C.skin1); L.set(hx + 4, cy - 1, C.skin1); // nose
+    L.rect(hx + 6, cy - 3, 1, 7, C.hair); // moustache
+    L.rect(hx + 8, cy - 1, 1, 3, C.k); // open mouth
+    L.set(hx + 9, cy + 1, C.tongue); L.set(hx + 10, cy + 1, C.tongue);
+    L.set(hx + 10, cy + 2, C.k);
+    return { layer: L, ground: 44, center: [38, cy] };
+  }
+
+  function buildHorse() {
+    const L = new Layer(84, 44);
+    const G = 43;
+    // Tail, draped on the ground
+    L.thickLine(64, 30, 72, 33, C.mane, 3);
+    L.thickLine(72, 33, 77, 41, C.mane, 3);
+    L.thickLine(70, 34, 81, 42, C.mane, 2);
+    L.line(66, 30, 74, 34, C.horse2);
+    // Legs (stiff, in the air) — drawn before the barrel so it overlaps them
+    const legs = [
+      { x: 33, lean: -4, top: 6 },
+      { x: 39, lean: -2, top: 4 },
+      { x: 53, lean: 2, top: 5 },
+      { x: 59, lean: 4, top: 7 },
+    ];
+    legs.forEach((g, i) => {
+      const x1 = g.x + g.lean;
+      const col = i % 2 === 0 ? C.horse1 : C.horse0;
+      if (i >= 2) L.ellipse(g.x - 1, 24, 4, 5, col); // thigh
+      L.thickLine(g.x, 26, x1, g.top + 4, col, 3.2);
+      L.thickLine(x1, g.top + 5, x1, g.top + 3, C.sock, 3.2);
+      L.rect(Math.round(x1) - 2, g.top - 1, 4, 4, C.hoof);
+    });
+    // Barrel (on its back: belly up)
+    const bx = 47, by = 32;
+    L.ellipse(bx, by, 20, 9, C.horse0);
+    L.map((x, y, c) => {
+      if (Math.abs(x - bx) > 21 || Math.abs(y - by) > 10 || c !== C.horse0) return c;
+      if (y < by - 4) return C.belly;
+      if (y < by - 2) return bayer(x, y) > 0.5 ? C.belly : C.horse0;
+      if (y > by + 5) return C.horse1;
+      return c;
+    });
+    // Neck
+    L.poly([[30, 26], [32, 39], [14, 41], [12, 33]], C.horse0);
+    L.poly([[30, 34], [32, 40], [14, 42], [14, 38]], C.horse1);
+    // Head, lying on its cheek, muzzle left
+    L.ellipse(11, 35, 8, 5.5, C.horse0);
+    L.ellipse(4, 37, 4.5, 3.6, C.horse1);
+    L.poly([[12, 30], [15, 23], [18, 31]], C.horse0); // ear
+    L.set(15, 27, C.horse2); L.set(15, 28, C.horse2);
+    // Mane along the neck
+    L.thickLine(29, 25, 14, 31, C.mane, 3);
+    for (const [x, y] of [[26, 27], [22, 29], [18, 30]]) { L.set(x, y + 2, C.mane); L.set(x - 1, y + 3, C.mane); }
+    // Blaze
+    L.line(9, 31, 3, 35, C.sock);
+    // Tongue flopped out on the ground
+    L.ellipse(3, 42, 2.4, 1.3, C.tongue);
+    L.outline(C.k);
+    // X eye + nostril + mouth line
+    const ex = 11, ey = 33;
+    L.set(ex - 1, ey - 1, C.k); L.set(ex + 1, ey - 1, C.k); L.set(ex, ey, C.k); L.set(ex - 1, ey + 1, C.k); L.set(ex + 1, ey + 1, C.k);
+    L.set(1, 36, C.k);
+    L.line(2, 40, 7, 40, C.k);
+    L.line(29, 33, 32, 37, C.horse2); // shoulder line
+    return { layer: L, ground: G };
+  }
+
+  // The wagon lies upside down on its crushed bonnet, rear end (left) heaved up.
+  const TILT = 0.17;
+  const tiltY = (x, y) => y - (82 - x) * TILT;
+  const WAGON = {
+    w: 106, h: 66, ground: 65,
+    wheels: [
+      { x: 31, y: tiltY(31, 33), r: 12, spin: true },
+      { x: 70, y: tiltY(70, 34), r: 10, spin: false },
+    ],
+  };
+
+  function buildWagon() {
+    const L = new Layer(WAGON.w, WAGON.h);
+    const G = WAGON.ground;
+    const boxTop = 30, boxBot = 44;
+    // Tongue (drawbar) jutting into the air from the front axle
+    L.thickLine(80, tiltY(80, 36), 102, 16, C.wood2, 2.6);
+    L.thickLine(80, tiltY(80, 35), 101, 15, C.wood1, 1);
+    // Canvas bonnet squashed between the box and the ground
+    const edge = (x) => tiltY(x, boxBot);
+    L.poly([[15, edge(15)], [81, edge(81)], [88, G - 5], [84, G], [11, G], [8, G - 6]], C.canvas0);
+    L.map((x, y, c) => {
+      if (c !== C.canvas0) return c;
+      const t = (y - edge(x)) / Math.max(1, G - edge(x));
+      if ([27, 40, 53, 66].some((hx) => Math.abs(x - hx - t * 3) < 0.9)) return t > 0.85 ? C.canvas2 : C.canvas1; // hoops
+      if (y > G - 3) return C.canvas2;
+      if (t > 0.72) return bayer(x, y) > 0.45 ? C.canvas1 : C.canvas0;
+      if (t < 0.12) return C.canvas1;
+      return c;
+    });
+    // A tear in the canvas
+    L.poly([[44, 52], [50, 51], [48, 58], [43, 56]], C.k);
+    L.set(46, 54, C.wood2);
+    // Wagon box (upside down, so its floor is on top)
+    L.poly([[14, tiltY(14, boxTop)], [83, tiltY(83, boxTop)], [83, tiltY(83, boxBot)], [14, tiltY(14, boxBot)]], C.wood0);
+    L.map((x, y, c) => {
+      if (c !== C.wood0) return c;
+      const ly = y - tiltY(x, boxTop); // row within the box
+      if (ly < 1.5) return C.wood2; // floor seen edge-on
+      if (Math.abs(ly - 5.5) < 0.6 || Math.abs(ly - 10) < 0.6) return C.wood1; // plank seams
+      if (x === 14 || x === 82 || x === 48) return C.wood1; // posts
+      if (ly > 12.5) return C.wood2;
+      return c;
+    });
+    // Axle bolsters
+    L.poly([[25, tiltY(25, 26)], [37, tiltY(37, 26)], [37, tiltY(37, 30)], [25, tiltY(25, 30)]], C.wood2);
+    L.poly([[65, tiltY(65, 27)], [75, tiltY(75, 27)], [75, tiltY(75, 30)], [65, tiltY(65, 30)]], C.wood2);
+    L.outline(C.k);
+    return { layer: L, ground: G };
+  }
+
+  function drawWheel(L, cx, cy, r, angle, spokes) {
+    const n = spokes || 10;
+    for (let y = Math.floor(cy - r - 1); y <= Math.ceil(cy + r + 1); y++)
+      for (let x = Math.floor(cx - r - 1); x <= Math.ceil(cx + r + 1); x++) {
+        const dx = x - cx, dy = y - cy;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d > r + 0.5) continue;
+        if (d > r - 0.5) { L.set(x, y, C.k); continue; }
+        if (d > r - 1.5) { L.set(x, y, C.iron); continue; }
+        if (d > r - 3.4) { L.set(x, y, dx + dy < -2 ? C.wood0 : C.wood1); continue; }
+        if (d > r - 4.2) { L.set(x, y, C.k); continue; }
+        if (d <= 2.6) { L.set(x, y, d <= 1.2 ? C.iron : d > 2 ? C.k : C.wood2); continue; }
+        const a = Math.atan2(dy, dx) - angle;
+        const step = (Math.PI * 2) / n;
+        const off = ((a % step) + step) % step;
+        const dist = Math.min(off, step - off) * d;
+        if (dist < 0.75) L.set(x, y, C.wood0);
+        else if (dist < 1.45) L.set(x, y, C.wood2);
+      }
+  }
+
+  function drawLooseWheel(L, cx, cy) {
+    // A wheel lying flat in the grass, seen nearly edge-on.
+    L.ellipse(cx, cy, 11, 3, C.k);
+    L.ellipse(cx, cy, 10, 2.2, C.wood1);
+    L.ellipse(cx, cy, 7.5, 1.2, C.grass2);
+    L.line(cx - 7, cy, cx + 7, cy, C.wood0);
+    L.set(cx, cy, C.wood2);
+    L.set(cx - 1, cy, C.k); L.set(cx + 1, cy, C.k);
+  }
+
+  function drawCargo(L, x, y, crateX, crateY) {
+    // barrel on its side
+    const b = new Layer(16, 12);
+    b.ellipse(7, 5.5, 7, 5, C.wood1);
+    b.map((px, py, c) => (py < 3 ? C.wood0 : py > 8 ? C.wood2 : c));
+    b.line(3, 1, 3, 10, C.iron);
+    b.line(11, 1, 11, 10, C.iron);
+    b.outline(C.k);
+    b.ellipse(13, 5.5, 2.4, 4.4, C.wood2);
+    b.set(13, 5, C.k);
+    b.drawOnto(L, x, y);
+    // crate
+    const cr = new Layer(14, 12);
+    cr.rect(1, 1, 11, 9, C.wood0);
+    cr.line(1, 1, 11, 9, C.wood1);
+    cr.line(1, 9, 11, 1, C.wood1);
+    cr.rect(1, 1, 11, 1, C.wood1);
+    cr.outline(C.k);
+    cr.drawOnto(L, crateX, crateY);
+  }
+
+  /** Soft dithered shadow on the grass. */
+  function drawShadow(L, cx, cy, rx, ry) {
+    for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++)
+      for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
+        const nx = (x - cx) / rx, ny = (y - cy) / ry;
+        const d = nx * nx + ny * ny;
+        if (d <= 1 && bayer(x, y) < 0.55 - d * 0.25) L.set(x, y, C.grass3);
+      }
+  }
+
+  // Small animated critters --------------------------------------------------
+
+  const BUZZARD = [
+    ['b.........b', 'Bb.......bB', '.bbb.h.bbb.', '....bbb....'],
+    ['...........', '....bhb....', '.bbbbbbbbb.', 'bB.......Bb'],
+  ];
+
+  function drawBuzzards(L, frame, total) {
+    const birds = [
+      { cx: 150, cy: 26, rx: 34, ry: 9, phase: 0 },
+      { cx: 112, cy: 16, rx: 22, ry: 6, phase: Math.PI },
+    ];
+    for (const b of birds) {
+      const a = (frame / total) * Math.PI * 2 + b.phase;
+      const x = Math.round(b.cx + Math.cos(a) * b.rx);
+      const y = Math.round(b.cy + Math.sin(a) * b.ry);
+      const wing = Math.floor((frame + (b.phase ? 3 : 0)) / 3) % 2;
+      L.sprite(BUZZARD[wing], { b: C.buzz0, B: C.buzz1, h: C.buzzHead }, x - 5, y - 2);
+    }
+  }
+
+  function drawFlies(L, frame, total, ox, oy) {
+    const flies = [
+      { cx: 10, cy: 26, rx: 9, ry: 6, kx: 2, ky: 3, p: 0 },
+      { cx: 46, cy: 14, rx: 12, ry: 5, kx: 1, ky: 2, p: 1.7 },
+      { cx: 30, cy: 20, rx: 7, ry: 8, kx: 3, ky: 2, p: 3.1 },
+    ];
+    for (const f of flies) {
+      const t = (frame / total) * Math.PI * 2;
+      const x = Math.round(ox + f.cx + Math.sin(t * f.kx + f.p) * f.rx);
+      const y = Math.round(oy + f.cy + Math.sin(t * f.ky + f.p * 2) * f.ry);
+      L.set(x, y, C.fly);
+      L.set(x + (frame % 2 ? 1 : -1), y - 1, C.flyWing);
+    }
+  }
+
+  const GHOST_BODY = [
+    '....ggggg....',
+    '..ggwwwwwgg..',
+    '.gwwwwwwwwWg.',
+    'gwwwwwwwwwwWg',
+    'gwweewwweewWg',
+    'gwweewwweewWg',
+    'gwwwwwwwwwwWg',
+    'gwwwwweewwwWg',
+    'gwwwwweewwwWg',
+    'gwwwwwwwwwWWg',
+    'gwwwwwwwwwWWg',
+    'gwwwwwwwwWWWg',
+  ];
+  const GHOST = [
+    [...GHOST_BODY, 'gwwg.gwwg.gWg', '.gg...gg...g.'],
+    [...GHOST_BODY, 'gw.gwwg.gwwWg', 'g...gg...gg..'],
+  ];
+
+  function drawSpirit(L, frame, total, x0, y0) {
+    const t = frame / total;
+    const y = Math.round(y0 - t * 60);
+    const x = Math.round(x0 + Math.sin(t * Math.PI * 4) * 3);
+    let alpha = 1;
+    if (t < 0.15) alpha = 0.25 + (t / 0.15) * 0.75;
+    else if (t > 0.7) alpha = Math.max(0, 1 - (t - 0.7) / 0.3);
+    if (alpha <= 0.05) return;
+    const g = new Layer(13, 14);
+    g.sprite(GHOST[Math.floor(frame / 3) % 2], { g: C.ghost1, w: C.ghost0, W: C.ghost1, e: C.ghostEye }, 0, 0);
+    g.drawOnto(L, x - 6, y - 13, alpha);
+  }
+
+  return {
+    W, H, HORIZON, C, NAMES, SKY_SETS, STONE, CROSS, WAGON,
+    Layer, mulberry32, bayer, buildPalette,
+    drawSky, drawMountains, drawGround, tuftList, drawTufts,
+    buildStone, stoneHalfWidth, textWidthBetween, engrave,
+    buildTraveler, buildHorse, buildWagon, drawWheel, drawLooseWheel, drawCargo, drawShadow,
+    drawBuzzards, drawFlies, drawSpirit,
+  };
+});
+
+/* ---- src/scene.js ---- */
+/*
+ * scene.js — public API. Lays out the epitaph on the headstone, composes
+ * each animation frame and hands the frames to the GIF encoder.
+ *
+ *   const TT = require('./src/scene');           // Node
+ *   const TT = globalThis.TrailTombstone.scene;  // browser
+ *
+ *   const result = TT.renderFrames({ subject: 'horse', name: 'Biscuit' });
+ *   const bytes  = TT.renderGif({ subject: 'wagon', scale: 3 });
+ */
+(function (factory) {
+  const dep = (name) =>
+    typeof module === 'object' && module.exports ? require('./' + name) : globalThis.TrailTombstone[name];
+  const api = factory(dep('art'), dep('font'), dep('gif'));
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else globalThis.TrailTombstone.scene = api;
+})(function (art, font, gif) {
+  'use strict';
+
+  const { W, H, C, Layer } = art;
+
+  const SUBJECTS = {
+    traveler: { label: 'Fallen traveler' },
+    horse: { label: 'Dead horse' },
+    wagon: { label: 'Tipped-over wagon' },
+  };
+  const SKIES = { day: 'Midday', dusk: 'Sundown', night: 'Moonlight' };
+
+  // Starting text for each subject (used when no name/epitaph is given).
+  const PRESETS = {
+    traveler: { name: 'HANK', epitaph: 'Ate the questionable berries.' },
+    horse: { name: 'DUSTY', epitaph: 'Good horse. Bad at rivers.' },
+    wagon: { name: 'BETSY', epitaph: 'Axle snapped. Spirit unbroken.' },
+  };
+
+  // Fuel for the "random epitaph" button.
+  const EPITAPHS = {
+    traveler: [
+      'Ate the questionable berries.',
+      'Forded the river. The river won.',
+      'Said "I know a shortcut."',
+      'Tried to pet the rattlesnake.',
+      'Drank from the wrong creek.',
+      'Traded his boots for a ham. Regretted it.',
+      'Died as he lived: lost.',
+      'Went to find water. Found it.',
+      'Should have caulked the wagon.',
+      'Mistook the bear for a large dog.',
+      'Out of food, out of luck, out of here.',
+      'Bet his oxen on a card game.',
+    ],
+    horse: [
+      'Good horse. Bad at rivers.',
+      'Carried us 900 miles. We carried him 2.',
+      'Never complained. Bit everyone though.',
+      'Ate the oats. And the sack.',
+      'Finally got to sit down.',
+      'Gone to the big pasture.',
+      'Spooked by a tumbleweed. Fatally.',
+      'Kicked the bucket. Literally.',
+    ],
+    wagon: [
+      'Axle snapped. Spirit unbroken.',
+      'Hit one rock too many.',
+      'Took the hill at full speed.',
+      'Rest in pieces.',
+      'Lost a wheel. Then lost the rest.',
+      'Too much bacon in the back.',
+      'Overloaded, overturned, over it.',
+      'Survived 3 rivers. Not the 4th.',
+    ],
+  };
+
+  const DEFAULTS = {
+    subject: 'traveler',
+    sky: 'dusk',
+    header: 'HERE LIES',
+    caption: 'Press SPACE to pay respects',
+    cross: true,
+    flowers: true,
+    buzzards: true,
+    critters: true, // flies on the horse, ghost for the traveler, spinning wheel on the wagon
+    typewriter: false,
+    seed: 1848,
+    delay: 9, // hundredths of a second per frame
+    scale: 3,
+  };
+
+  const LOOP = 24; // ambient animation loop length (frames)
+
+  function withDefaults(opts) {
+    const o = Object.assign({}, DEFAULTS);
+    for (const [k, v] of Object.entries(opts || {})) if (v !== undefined) o[k] = v;
+    if (!SUBJECTS[o.subject]) o.subject = DEFAULTS.subject;
+    if (!SKIES[o.sky]) o.sky = DEFAULTS.sky;
+    if (o.name === undefined) o.name = PRESETS[o.subject].name;
+    if (o.epitaph === undefined) o.epitaph = PRESETS[o.subject].epitaph;
+    o.seed = (Number(o.seed) || 0) >>> 0;
+    o.scale = Math.max(1, Math.min(8, Math.round(Number(o.scale) || DEFAULTS.scale)));
+    o.delay = Math.max(2, Math.min(100, Math.round(Number(o.delay) || DEFAULTS.delay)));
+    return o;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Headstone text layout
+  // ---------------------------------------------------------------------------
+
+  const TOP = 46; // first usable row on the stone face
+  const BOTTOM = 128; // last usable row
+
+  /** Lay the carving out from row `top`. Returns positioned items. */
+  function layoutFrom(top, o) {
+    const items = [];
+    let y = top;
+    let overflow = false;
+    const fits = (h) => y + h - 1 <= BOTTOM;
+
+    if (o.cross) {
+      items.push({ kind: 'cross', y, h: art.CROSS.length });
+      y += art.CROSS.length + 4;
+    }
+    const header = font.normalize(o.header || '').trim();
+    if (header) {
+      const lines = font.wrap(header, () => art.textWidthBetween(y, y + 6), 1).slice(0, 2);
+      for (const line of lines) {
+        items.push({ kind: 'text', text: line, y, scale: 1 });
+        y += font.LINE_H;
+      }
+      y += 2;
+    }
+    const name = font.normalize(o.name || '').trim();
+    if (name) {
+      if (font.measure(name, 2) <= art.textWidthBetween(y, y + 13) && fits(14)) {
+        items.push({ kind: 'text', text: name, y, scale: 2 });
+        y += 14 + 5;
+      } else {
+        const lines = font.wrap(name, (i) => art.textWidthBetween(y + i * font.LINE_H, y + i * font.LINE_H + 6), 1);
+        for (const line of lines) {
+          items.push({ kind: 'text', text: line, y, scale: 1 });
+          y += font.LINE_H;
+        }
+        y += 4;
+      }
+    }
+    const epitaph = font.normalize(o.epitaph || '').trim();
+    let epitaphChars = 0;
+    if (epitaph) {
+      const startY = y;
+      const lines = font.wrap(epitaph, (i) => art.textWidthBetween(startY + i * font.LINE_H, startY + i * font.LINE_H + 6), 1);
+      for (let i = 0; i < lines.length; i++) {
+        if (!fits(7)) {
+          overflow = true;
+          const last = items[items.length - 1];
+          if (last && last.kind === 'text' && last.epitaph) {
+            const chars = Array.from(last.text);
+            const room = Math.floor((art.textWidthBetween(last.y, last.y + 6) + 1) / font.ADVANCE);
+            last.text = chars.slice(0, Math.max(0, Math.min(chars.length, room - 3))).join('') + '...';
+          }
+          break;
+        }
+        items.push({ kind: 'text', text: lines[i], y, scale: 1, epitaph: true });
+        epitaphChars += Array.from(lines[i]).length;
+        y += font.LINE_H;
+      }
+    }
+    const used = items.length ? items[items.length - 1].y + (items[items.length - 1].scale === 2 ? 14 : 7) - 1 : top;
+    return { items, used, overflow, epitaphChars };
+  }
+
+  function layoutStone(o) {
+    let lay = layoutFrom(TOP, o);
+    // Centre the carving vertically when there is room to spare.
+    const spare = BOTTOM - lay.used;
+    if (!lay.overflow && spare > 1) {
+      const shifted = layoutFrom(TOP + Math.floor(spare / 2), o);
+      if (!shifted.overflow) lay = shifted;
+    }
+    return lay;
+  }
+
+  function carve(L, lay, reveal) {
+    const mask = new Layer(W, H);
+    let budget = reveal == null ? Infinity : reveal;
+    for (const it of lay.items) {
+      if (it.kind === 'cross') {
+        mask.sprite(art.CROSS, { '#': 1 }, art.STONE.cx - 2, it.y);
+        continue;
+      }
+      let text = it.text;
+      if (it.epitaph) {
+        const chars = Array.from(text);
+        if (budget <= 0) continue;
+        if (chars.length > budget) text = chars.slice(0, budget).join('');
+        budget -= chars.length;
+      }
+      const x = Math.round(art.STONE.cx - font.measure(it.text, it.scale) / 2);
+      font.drawText(mask, text, x, it.y, 1, it.scale);
+    }
+    art.engrave(L, mask);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Caption bar
+  // ---------------------------------------------------------------------------
+
+  function layoutCaption(text) {
+    const t = font.normalize(text || '').trim();
+    if (!t) return null;
+    let lines = font.wrap(t, () => W - 12, 1);
+    if (lines.length > 2) {
+      lines = lines.slice(0, 2);
+      const chars = Array.from(lines[1]);
+      lines[1] = chars.slice(0, Math.min(chars.length, 35)).join('') + '...';
+    }
+    const h = 8 + lines.length * font.LINE_H - 2;
+    return { lines, h, y: H - h };
+  }
+
+  function drawCaption(L, cap, frame, reveal) {
+    L.rect(0, cap.y, W, cap.h, C.capBg);
+    L.rect(0, cap.y, W, 1, C.capDim);
+    let budget = reveal == null ? Infinity : reveal;
+    let cursorAt = null;
+    cap.lines.forEach((line, i) => {
+      const chars = Array.from(line);
+      const shown = Math.max(0, Math.min(chars.length, budget));
+      budget -= chars.length;
+      const x = Math.round(W / 2 - font.measure(line, 1) / 2);
+      const y = cap.y + 4 + i * font.LINE_H;
+      font.drawText(L, chars.slice(0, shown).join(''), x, y, C.capFg, 1);
+      if (shown < chars.length && cursorAt == null) cursorAt = { x: x + shown * font.ADVANCE, y };
+      if (i === cap.lines.length - 1 && cursorAt == null) cursorAt = { x: x + chars.length * font.ADVANCE + 1, y };
+    });
+    if (cursorAt && cursorAt.x + 5 < W && Math.floor(frame / 6) % 2 === 0) L.rect(cursorAt.x, cursorAt.y, 5, 7, C.cursor);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Frames
+  // ---------------------------------------------------------------------------
+
+  const cache = new Map();
+  function cached(key, make) {
+    if (!cache.has(key)) {
+      if (cache.size > 24) cache.clear();
+      cache.set(key, make());
+    }
+    return cache.get(key);
+  }
+
+  function subjectPlacement(subject) {
+    if (subject === 'traveler') return { x: 130, groundY: 140, shadow: [52, 27, 48, 17] };
+    if (subject === 'horse') return { x: 142, groundY: 136, shadow: [42, 40, 40, 5] };
+    return { x: 124, groundY: 137, shadow: [50, 62, 46, 4] };
+  }
+
+  /**
+   * Render every frame as palette indices.
+   * @returns {{width:number,height:number,frames:Uint8Array[],delays:number[],palette:number[][],info:object}}
+   */
+  function renderFrames(options) {
+    const o = withDefaults(options);
+    const palette = art.buildPalette(o.sky);
+    const tufts = art.tuftList(o.seed);
+    const stone = cached('stone:' + o.seed + ':' + o.flowers, () => art.buildStone(o.seed, o));
+    const lay = layoutStone(o);
+    const cap = layoutCaption(o.caption);
+    const capChars = cap ? cap.lines.reduce((n, l) => n + Array.from(l).length, 0) : 0;
+
+    let subject;
+    if (o.subject === 'traveler') subject = cached('traveler', art.buildTraveler);
+    else if (o.subject === 'horse') subject = cached('horse', art.buildHorse);
+    else subject = cached('wagon', art.buildWagon);
+    const place = subjectPlacement(o.subject);
+    const sx = place.x;
+    const sy = place.groundY - subject.ground;
+
+    // Frame count: one ambient loop, or long enough to type everything out.
+    let total = LOOP;
+    const charsPerFrame = 2;
+    let typeFrames = 0;
+    if (o.typewriter) {
+      typeFrames = Math.ceil((lay.epitaphChars + capChars) / charsPerFrame) + 2;
+      total = Math.ceil((typeFrames + 22) / LOOP) * LOOP;
+    }
+
+    // Backdrop is static except at night, when the stars twinkle.
+    const makeBackdrop = (frame) => {
+      const B = new Layer(W, H, C.sky0);
+      art.drawSky(B, o.sky, frame, o.seed);
+      art.drawMountains(B, o.seed);
+      art.drawGround(B, o.seed);
+      return B;
+    };
+    const staticBackdrop = o.sky === 'night' ? null : makeBackdrop(0);
+
+    if (options && options.maxFrames) total = Math.min(total, Math.max(1, options.maxFrames | 0));
+    const frames = [];
+    for (let f = 0; f < total; f++) {
+      const loopF = f % LOOP;
+      const L = staticBackdrop ? staticBackdrop.clone() : makeBackdrop(loopF);
+      art.drawTufts(L, tufts, loopF);
+      if (o.buzzards) art.drawBuzzards(L, loopF, LOOP);
+      stone.drawOnto(L, 0, 0);
+
+      // Typewriter reveal
+      let revealEpitaph = null, revealCaption = null;
+      if (o.typewriter) {
+        const shown = Math.max(0, (f - 2) * charsPerFrame);
+        revealEpitaph = Math.min(lay.epitaphChars, shown);
+        revealCaption = Math.max(0, shown - lay.epitaphChars);
+      }
+      carve(L, lay, revealEpitaph);
+
+      const [shx, shy, shrx, shry] = place.shadow;
+      art.drawShadow(L, sx + shx, sy + shy, shrx, shry);
+      if (o.subject === 'wagon') {
+        art.drawLooseWheel(L, sx + 4, place.groundY + 5);
+        subject.layer.drawOnto(L, sx, sy);
+        art.drawCargo(L, sx - 4, place.groundY - 10, sx + 90, place.groundY - 11);
+        for (const w of art.WAGON.wheels) {
+          const angle = w.spin && o.critters ? (loopF / LOOP) * ((Math.PI * 2) / 10) * 2 : 0.15;
+          art.drawWheel(L, sx + w.x, sy + w.y, w.r, angle, 10);
+        }
+      } else {
+        subject.layer.drawOnto(L, sx, sy);
+      }
+      if (o.critters && o.subject === 'horse') art.drawFlies(L, loopF, LOOP, sx, sy);
+      if (o.critters && o.subject === 'traveler') art.drawSpirit(L, loopF, LOOP, sx + subject.center[0], sy + subject.center[1]);
+
+      if (cap) drawCaption(L, cap, f, revealCaption);
+
+      const out = new Uint8Array(W * H);
+      for (let i = 0; i < out.length; i++) out[i] = L.data[i] < 0 ? C.k : L.data[i];
+      frames.push(out);
+    }
+
+    // Hold the final typed-out frame a little longer.
+    const delays = frames.map(() => o.delay);
+    return {
+      width: W,
+      height: H,
+      frames,
+      delays,
+      palette,
+      info: {
+        overflow: lay.overflow,
+        frames: total,
+        durationMs: delays.reduce((a, b) => a + b, 0) * 10,
+      },
+    };
+  }
+
+  function renderGif(options) {
+    const o = withDefaults(options);
+    const r = renderFrames(o);
+    const bytes = gif.encodeGif({ width: r.width, height: r.height, frames: r.frames, palette: r.palette, delay: r.delays, scale: o.scale });
+    return { bytes, info: r.info, width: r.width * o.scale, height: r.height * o.scale };
+  }
+
+  return { renderFrames, renderGif, layoutStone, withDefaults, DEFAULTS, PRESETS, EPITAPHS, SUBJECTS, SKIES, W, H };
+});
+
+</script>
+<script>
+/* ---- web/app.js ---- */
+/*
+ * app.js — browser UI for the tombstone generator. Uses the renderer that
+ * the build inlines as globalThis.TrailTombstone.
+ */
+(function () {
+  'use strict';
+
+  const TT = globalThis.TrailTombstone.scene;
+  const $ = (id) => document.getElementById(id);
+  const STORE_KEY = 'trail-tombstone:v1';
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const els = {
+    form: $('form'),
+    preview: $('preview'),
+    badge: $('badge'),
+    playBtn: $('playBtn'),
+    makeBtn: $('makeBtn'),
+    size: $('size'),
+    result: $('result'),
+    resultImg: $('resultImg'),
+    resultFacts: $('resultFacts'),
+    saveBtn: $('saveBtn'),
+    saveNote: $('saveNote'),
+    header: $('header'),
+    name: $('name'),
+    epitaph: $('epitaph'),
+    caption: $('caption'),
+    overflow: $('overflow'),
+    randomBtn: $('randomBtn'),
+    sceneryBtn: $('sceneryBtn'),
+    crittersLabel: $('crittersLabel'),
+  };
+
+  const CRITTER_LABEL = { traveler: 'Ghost', horse: 'Flies', wagon: 'Spinning wheel' };
+
+  // ---------------------------------------------------------------- state ---
+
+  const state = {
+    subject: 'traveler',
+    sky: 'dusk',
+    header: 'HERE LIES',
+    name: TT.PRESETS.traveler.name,
+    epitaph: TT.PRESETS.traveler.epitaph,
+    caption: TT.DEFAULTS.caption,
+    cross: true,
+    flowers: true,
+    buzzards: true,
+    critters: true,
+    typewriter: false,
+    seed: TT.DEFAULTS.seed,
+    scale: 3,
+  };
+  // Name/epitaph follow the subject's preset until the user edits them.
+  const edited = { name: false, epitaph: false };
+
+  function load() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+      if (saved && typeof saved === 'object') {
+        for (const k of Object.keys(state)) if (k in (saved.state || {})) state[k] = saved.state[k];
+        Object.assign(edited, saved.edited || {});
+      }
+    } catch (e) {
+      /* storage unavailable: start fresh */
+    }
+  }
+  function persist() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ state, edited }));
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  function syncForm() {
+    const radio = (name, value) => {
+      const el = els.form.querySelector(`input[name="${name}"][value="${value}"]`);
+      if (el) el.checked = true;
+    };
+    radio('subject', state.subject);
+    radio('sky', state.sky);
+    els.header.value = state.header;
+    els.name.value = state.name;
+    els.epitaph.value = state.epitaph;
+    els.caption.value = state.caption;
+    for (const k of ['cross', 'flowers', 'buzzards', 'critters', 'typewriter']) $(k).checked = !!state[k];
+    els.size.value = String(state.scale);
+    els.crittersLabel.textContent = CRITTER_LABEL[state.subject];
+  }
+
+  // -------------------------------------------------------------- preview ---
+
+  const ctx = els.preview.getContext('2d');
+  const image = ctx.createImageData(TT.W, TT.H);
+  const pixels32 = new Uint32Array(image.data.buffer);
+  let rendered = null;
+  let lut = null;
+  let frameIndex = 0;
+  let playing = !reducedMotion;
+  let lastTick = 0;
+
+  function paletteLut(palette) {
+    const out = new Uint32Array(palette.length);
+    palette.forEach(([r, g, b], i) => (out[i] = (255 << 24) | (b << 16) | (g << 8) | r));
+    return out;
+  }
+
+  function blit(frame) {
+    for (let i = 0; i < frame.length; i++) pixels32[i] = lut[frame[i]];
+    ctx.putImageData(image, 0, 0);
+  }
+
+  function renderPreview() {
+    rendered = TT.renderFrames(state);
+    lut = paletteLut(rendered.palette);
+    frameIndex = Math.min(frameIndex, rendered.frames.length - 1);
+    if (!playing) frameIndex = rendered.frames.length - 1;
+    blit(rendered.frames[frameIndex]);
+    els.badge.textContent = `${rendered.frames.length} FRAMES · ${(rendered.info.durationMs / 1000).toFixed(1)}S`;
+    els.overflow.hidden = !rendered.info.overflow;
+  }
+
+  function tick(now) {
+    requestAnimationFrame(tick);
+    if (!playing || !rendered) return;
+    const delay = rendered.delays[frameIndex] * 10;
+    if (now - lastTick < delay) return;
+    lastTick = now;
+    frameIndex = (frameIndex + 1) % rendered.frames.length;
+    blit(rendered.frames[frameIndex]);
+  }
+
+  function setPlaying(on) {
+    playing = on;
+    els.playBtn.textContent = on ? 'PAUSE' : 'PLAY';
+    els.playBtn.setAttribute('aria-pressed', String(on));
+    if (!on && rendered) {
+      frameIndex = rendered.frames.length - 1;
+      blit(rendered.frames[frameIndex]);
+    }
+  }
+
+  // Scene-picker thumbnails: the right-hand part of frame 0 for each subject.
+  function renderThumbs() {
+    for (const canvas of document.querySelectorAll('canvas[data-thumb]')) {
+      const subject = canvas.dataset.thumb;
+      const r = TT.renderFrames({
+        ...state, subject, caption: '', typewriter: false, name: '', epitaph: '',
+        buzzards: false, critters: false, maxFrames: 1,
+      });
+      const pal = paletteLut(r.palette);
+      const c = canvas.getContext('2d');
+      const img = c.createImageData(120, 66);
+      const px = new Uint32Array(img.data.buffer);
+      const f = r.frames[0];
+      for (let y = 0; y < 66; y++) for (let x = 0; x < 120; x++) px[y * 120 + x] = pal[f[(y + 84) * TT.W + (x + 120)]];
+      c.putImageData(img, 0, 0);
+    }
+  }
+
+  // ------------------------------------------------------------------ GIF ---
+
+  let currentGif = null; // { blob, url, filename }
+
+  function slug(s) {
+    return (
+      String(s || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 40) || 'tombstone'
+    );
+  }
+
+  function clearResult() {
+    if (currentGif) URL.revokeObjectURL(currentGif.url);
+    currentGif = null;
+    els.result.hidden = true;
+    els.saveNote.hidden = true;
+  }
+
+  async function makeGif() {
+    els.makeBtn.disabled = true;
+    els.makeBtn.textContent = 'Carving…';
+    await new Promise((r) => setTimeout(r, 30)); // let the button repaint
+    try {
+      const t0 = performance.now();
+      const out = TT.renderGif(state);
+      const blob = new Blob([out.bytes], { type: 'image/gif' });
+      clearResult();
+      currentGif = {
+        blob,
+        url: URL.createObjectURL(blob),
+        filename: `tombstone-${slug(state.name || state.subject)}.gif`,
+      };
+      els.resultImg.src = currentGif.url;
+      const kb = blob.size / 1024;
+      els.resultFacts.textContent = `${currentGif.filename} · ${out.width}×${out.height} · ${out.info.frames} frames · ${
+        kb >= 1024 ? (kb / 1024).toFixed(2) + ' MB' : kb.toFixed(0) + ' KB'
+      } · made in ${Math.round(performance.now() - t0)} ms`;
+      els.result.hidden = false;
+    } catch (e) {
+      els.resultFacts.textContent = `Couldn't make the GIF: ${e.message}`;
+      els.result.hidden = false;
+    } finally {
+      els.makeBtn.disabled = false;
+      els.makeBtn.textContent = 'Make GIF';
+    }
+  }
+
+  // In a Claude artifact, files go through the downloads capability; anywhere
+  // else, a plain download link does the job.
+  let downloadsPromise = null;
+  function downloads() {
+    if (!downloadsPromise) {
+      downloadsPromise =
+        window.claude && typeof window.claude.use === 'function'
+          ? window.claude.use('downloads').catch(() => null)
+          : Promise.resolve(null);
+    }
+    return downloadsPromise;
+  }
+
+  function note(text) {
+    els.saveNote.textContent = text;
+    els.saveNote.hidden = !text;
+  }
+
+  async function saveGif() {
+    if (!currentGif) return;
+    note('');
+    const dl = await downloads();
+    if (dl) {
+      try {
+        await dl.save({ filename: currentGif.filename, data: currentGif.blob });
+        note('Saved.');
+      } catch (e) {
+        const code = e && e.code;
+        if (code === 'declined') note('Save cancelled.');
+        else if (code === 'rate_limited') note('A save prompt is already open. Finish that one first.');
+        else note('Saving isn’t available here. Right-click the GIF and choose “Save image as”.');
+      }
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = currentGif.url;
+    a.download = currentGif.filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  // ---------------------------------------------------------------- wiring ---
+
+  let pending = 0;
+  function update(opts) {
+    persist();
+    clearTimeout(pending);
+    pending = setTimeout(() => {
+      renderPreview();
+      if (opts && opts.thumbs) renderThumbs();
+      clearResult();
+    }, 40);
+  }
+
+  els.form.addEventListener('submit', (e) => e.preventDefault());
+
+  els.form.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'subject') {
+      state.subject = t.value;
+      if (!edited.name) state.name = TT.PRESETS[state.subject].name;
+      if (!edited.epitaph) state.epitaph = TT.PRESETS[state.subject].epitaph;
+      els.name.value = state.name;
+      els.epitaph.value = state.epitaph;
+      els.crittersLabel.textContent = CRITTER_LABEL[state.subject];
+      frameIndex = 0;
+      update();
+    } else if (t.name === 'sky') {
+      state.sky = t.value;
+      update({ thumbs: true });
+    } else if (t.type === 'checkbox') {
+      state[t.id] = t.checked;
+      frameIndex = 0;
+      update();
+    }
+  });
+
+  for (const key of ['header', 'name', 'epitaph', 'caption']) {
+    els[key].addEventListener('input', () => {
+      state[key] = els[key].value;
+      if (key in edited) edited[key] = true;
+      update();
+    });
+  }
+
+  els.size.addEventListener('change', () => {
+    state.scale = Number(els.size.value);
+    persist();
+    clearResult();
+  });
+
+  els.randomBtn.addEventListener('click', () => {
+    const list = TT.EPITAPHS[state.subject];
+    let next = state.epitaph;
+    for (let i = 0; i < 8 && next === state.epitaph; i++) next = list[Math.floor(Math.random() * list.length)];
+    state.epitaph = next;
+    els.epitaph.value = next;
+    edited.epitaph = true;
+    update();
+  });
+
+  els.sceneryBtn.addEventListener('click', () => {
+    state.seed = Math.floor(Math.random() * 1e6);
+    update({ thumbs: true });
+  });
+
+  els.playBtn.addEventListener('click', () => setPlaying(!playing));
+  els.makeBtn.addEventListener('click', makeGif);
+  els.saveBtn.addEventListener('click', saveGif);
+
+  load();
+  syncForm();
+  setPlaying(playing);
+  renderPreview();
+  renderThumbs();
+  requestAnimationFrame(tick);
+})();
+
+</script>
